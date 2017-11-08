@@ -1,8 +1,11 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-"""Setup script for dramatiq"""
-
+# This file is a part of the AnyBlok / Dramatiq project
+#
+#    Copyright (C) 2017 Jean-Sebastien SUZANNE <jssuzanne@anybox.fr>
+#
+# This Source Code Form is subject to the terms of the Mozilla Public License,
+# v. 2.0. If a copy of the MPL was not distributed with this file,You can
+# obtain one at http://mozilla.org/MPL/2.0/.
 from setuptools import setup, find_packages
 import os
 import sys
@@ -35,7 +38,7 @@ with open(
 with open(
     os.path.join(here, 'doc', 'MEMENTO.rst'), 'r', encoding='utf-8'
 ) as memento:
-    MEMENTO = front.read()
+    MEMENTO = memento.read()
 
 anyblok_init = [
 ]
