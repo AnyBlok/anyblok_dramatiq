@@ -67,6 +67,9 @@ setup(
         'anyblok.init': [
             'dramatiq_config=anyblok_dramatiq:anyblok_init_config',
         ],
+        'test_bloks': [
+            'test_dramatiq_1=anyblok_dramatiq.test_bloks.test_1:TestBlok1',
+        ],
     },
     include_package_data=True,
     install_requires=requirements,
