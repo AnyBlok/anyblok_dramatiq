@@ -25,11 +25,12 @@ virtualenv:
 
 services:
   - postgresql
+  - rabbitmq
 
 install:
   - pip install psycopg2
   - pip install anyblok
-  - pip install dramatiq[memcached]
+  - pip install dramatiq[rabbitmq]
   - pip install flake8
   - pip install coverage
   - pip install nose
