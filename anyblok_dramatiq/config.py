@@ -23,7 +23,7 @@ Configuration.applications.update({
 })
 
 
-@Configuration.add('dramatiq', label="Dramatiq - consumer options")
+@Configuration.add('dramatiq-consumer', label="Dramatiq - consumer options")
 def define_dramatiq_option(group):
     group.add_argument('--dramatiq-processes', type=int,
                        default=os.environ.get('ANYBLOK_DRAMATIQ_PROCESSES', 4),
@@ -40,7 +40,7 @@ def define_dramatiq_broker_option(group):
     group.add_argument('--dramatiq-broker', type=AnyBlokPlugin,
                        default=os.environ.get(
                            'ANYBLOK_DRAMATIQ_BROKER',
-                           'dramatiq.brokers:RabbitmqBroker'
+                           'dramatiq.brokers.rabbitmq:RabbitmqBroker'
                        ),
                        help='broker to use for communication with dramatiq')
     group.add_argument('--dramatiq-broker-host',
@@ -61,9 +61,9 @@ def define_dramatiq_broker_option(group):
                            0
                        ),
                        help="Broker heartbeat interval")
-    group.add_argument('--dramatiq-broker-connection-attemps', type=int,
+    group.add_argument('--dramatiq-broker-connection-attempts', type=int,
                        default=os.environ.get(
-                           'ANYBLOK_DRAMATIQ_BROKER_CONNECTION_ATTEMPS',
+                           'ANYBLOK_DRAMATIQ_BROKER_CONNECTION_ATTEMPTS',
                            5
                        ),
                        help="Broker connection attemps")

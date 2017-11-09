@@ -47,4 +47,4 @@ class DramatiqBlok(Blok):
         for blok in Blok.list_by_state('installed'):
             b = BlokManager.get(blok)
             if hasattr(b, 'declare_actors'):
-                b.define_actor(self.registry)
+                b.declare_actors(self.registry)

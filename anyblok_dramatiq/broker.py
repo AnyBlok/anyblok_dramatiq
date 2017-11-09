@@ -6,7 +6,7 @@
 # v. 2.0. If a copy of the MPL was not distributed with this file,You can
 # obtain one at http://mozilla.org/MPL/2.0/.
 from dramatiq import set_broker
-from dramatiq.brokers import RabbitmqBroker
+from dramatiq.brokers.rabbitmq import RabbitmqBroker
 from anyblok.config import Configuration
 from .middleware import DramatiqMessageMiddleware
 
