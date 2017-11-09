@@ -6,7 +6,7 @@
 # v. 2.0. If a copy of the MPL was not distributed with this file,You can
 # obtain one at http://mozilla.org/MPL/2.0/.
 from anyblok import Declarations
-from anyblok.column import Integer, UUID, Selection, DateTime, Json
+from anyblok.column import UUID, Selection, DateTime, Json
 from datetime import datetime
 from dramatiq import Message as DramatiqMessage, get_broker, Actor
 import json

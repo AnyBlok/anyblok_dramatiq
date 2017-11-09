@@ -9,6 +9,7 @@ from logging import getLogger
 from anyblok.config import Configuration
 from anyblok.registry import RegistryManager
 from dramatiq.middleware import Middleware
+from datetime import datetime
 
 logger = getLogger(__name__)
 
@@ -25,6 +26,7 @@ class DramatiqMessageMiddleware(Middleware):
             if delay:
                 m.status = registry.Dramatiq.Message.STATUS_DELAYED
 
+            m.updated_at = datetime.now()
             registry.commit()
 
     def before_process_message(self, broker, message):
@@ -34,6 +36,7 @@ class DramatiqMessageMiddleware(Middleware):
         m = registry.Dramatiq.Message.get_instance_of(message)
         if m:
             m.status = registry.Dramatiq.Message.STATUS_RUNNING
+            m.updated_at = datetime.now()
             registry.commit()
 
     def after_process_message(self, broker, message, *,
@@ -49,12 +52,14 @@ class DramatiqMessageMiddleware(Middleware):
                 if exception is not None:
                     m.status = registry.Dramatiq.Message.STATUS_FAILED
 
+                m.updated_at = datetime.now()
                 registry.commit()
         except Exception as e:
             registry.rollback()
             m = registry.Dramatiq.Message.get_instance_of(message)
             if m:
                 m.status = registry.Dramatiq.Message.STATUS_FAILED
+                m.updated_at = datetime.now()
                 registry.commit()
             raise e
         finally:
