@@ -11,7 +11,8 @@ from anyblok.config import Configuration
 from anyblok.registry import RegistryManager
 from anyblok import load_init_function_from_entry_points
 from anyblok.scripts import format_configuration
-from dramatiq import Worker, get_broker
+from dramatiq import Worker
+from .broker import prepare_broker
 import signal
 import time
 from logging import getLogger
@@ -20,24 +21,11 @@ import sys
 logger = getLogger(__name__)
 
 
-def import_broker():
-    broker_name = Configuration.get('damatiq_broker')
-    broker = None
-    if not broker_name:
-        broker = get_broker()
-
-    if broker:
-        pass
-        # add middleware
-
-    return broker
-
-
 def worker_process(worker_id, logging_fd):
     db_name = Configuration.get('db_name')
     try:
         logging_pipe = os.fdopen(logging_fd, "w")
-        broker = import_broker()
+        broker = prepare_broker(withmiddleware=True)
         broker.emit_after("process_boot")
         registry = RegistryManager.get(db_name)
         if registry is None:
