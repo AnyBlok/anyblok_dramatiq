@@ -35,6 +35,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.coverage',
+    'anyblok.sphinx.ext.load.blok',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
