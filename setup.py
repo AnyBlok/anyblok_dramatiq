@@ -48,6 +48,11 @@ requirements = [
     'dramatiq',
 ]
 
+extras = ("memcached", "rabbitmq", "redis", "watch")
+extra_dependencies = {}
+for extra in extras:
+    extra_dependencies[extra] = ['dramatiq[%s]' % extra]
+
 setup(
     name='anyblok_dramatiq',
     version=version,
@@ -73,6 +78,7 @@ setup(
     },
     include_package_data=True,
     install_requires=requirements,
+    extras_require=extra_dependencies,
     zip_safe=False,
     keywords='dramatiq',
     classifiers=[
