@@ -61,6 +61,7 @@ class DramatiqMessageMiddleware(Middleware):
                 m.status = registry.Dramatiq.Message.STATUS_FAILED
                 m.updated_at = datetime.now()
                 registry.commit()
+
             raise e
         finally:
             registry.session.expire_all()

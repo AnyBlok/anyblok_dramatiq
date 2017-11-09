@@ -23,8 +23,9 @@ Configuration.applications.update({
 })
 
 
-@Configuration.add('dramatiq-consumer', label="Dramatiq - consumer options")
-def define_dramatiq_option(group):
+@Configuration.add('dramatiq-consumer', label="Dramatiq - consumer options",
+                   must_be_loaded_by_unittest=True)
+def define_dramatiq_consumer(group):
     group.add_argument('--dramatiq-processes', type=int,
                        default=os.environ.get('ANYBLOK_DRAMATIQ_PROCESSES', 4),
                        help="Number of process")
@@ -35,8 +36,9 @@ def define_dramatiq_option(group):
                        help='List of the midlewares allow to be load')
 
 
-@Configuration.add('dramatiq-broker', label="Dramatiq - broker options")
-def define_dramatiq_broker_option(group):
+@Configuration.add('dramatiq-broker', label="Dramatiq - broker options",
+                   must_be_loaded_by_unittest=True)
+def define_dramatiq_broker(group):
     group.add_argument('--dramatiq-broker', type=AnyBlokPlugin,
                        default=os.environ.get(
                            'ANYBLOK_DRAMATIQ_BROKER',

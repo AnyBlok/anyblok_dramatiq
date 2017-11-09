@@ -11,7 +11,7 @@ from anyblok.config import Configuration
 from .middleware import DramatiqMessageMiddleware
 
 
-def prepare_broker(withmiddleware=False):
+def prepare_broker(withmiddleware=True):
     broker_cls = Configuration.get('dramatiq_broker', RabbitmqBroker)
     middleware = []
     if withmiddleware:

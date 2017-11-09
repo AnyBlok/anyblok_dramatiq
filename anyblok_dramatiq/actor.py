@@ -9,7 +9,7 @@ import dramatiq
 from dramatiq.actor import _queue_name_re, Actor
 
 
-def declare_actor_for(Model, meth, *, queue_name="default",
+def declare_actor_for(Model, meth, queue_name="default",
                       priority=0, **options):
     db_name = Model.registry.db_name
     actor_name = db_name + ':' + Model.__registry_name__ + '=>' + meth
@@ -31,6 +31,11 @@ def declare_actor_for(Model, meth, *, queue_name="default",
         )
 
     real_function = getattr(Model, meth)
+
+    if isinstance(real_function, Actor):
+        raise ValueError(
+            "The actor %r is declared two time as an actor" % actor_name
+        )
 
     def fn(*a, **kw):
         return real_function(*a, **kw)
