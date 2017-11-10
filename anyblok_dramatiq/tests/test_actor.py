@@ -7,7 +7,7 @@
 # obtain one at http://mozilla.org/MPL/2.0/.
 from .testcase import DramatiqDBTestCase
 from anyblok.column import Integer, String
-from anyblok_dramatiq import declare_actor_for
+from anyblok_dramatiq import declare_actor_for, AnyBlokActorException
 from dramatiq.actor import Actor
 
 
@@ -39,20 +39,20 @@ class TestActor(DramatiqDBTestCase):
     def test_declare_actor_for_twice(self):
         registry = self.init_registry(add_in_registry)
         declare_actor_for(registry.Task, 'add')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AnyBlokActorException):
             declare_actor_for(registry.Task, 'add')
 
     def test_declare_actor_for_with_on_another_than_class_method(self):
         registry = self.init_registry(add_in_registry)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AnyBlokActorException):
             declare_actor_for(registry.Task, 'add_without_class_method')
 
     def test_declare_actor_for_with_bad_queue_name(self):
         registry = self.init_registry(add_in_registry)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AnyBlokActorException):
             declare_actor_for(registry.Task, 'add', queue_name='12345')
 
     def test_declare_actor_for_with_bad_broker_option(self):
         registry = self.init_registry(add_in_registry)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AnyBlokActorException):
             declare_actor_for(registry.Task, 'add', bad_broker_options='12345')

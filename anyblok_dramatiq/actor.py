@@ -9,12 +9,16 @@ import dramatiq
 from dramatiq.actor import _queue_name_re, Actor
 
 
+class AnyBlokActorException(ValueError):
+    """A ValueError exception for anyblok_dramatiq"""
+
+
 def declare_actor_for(Model, meth, queue_name="default",
                       priority=0, **options):
     db_name = Model.registry.db_name
     actor_name = db_name + ':' + Model.__registry_name__ + '=>' + meth
     if not _queue_name_re.fullmatch(queue_name):
-        raise ValueError(
+        raise AnyBlokActorException(
             "Queue names must start with a letter or an underscore followed "
             "by any number of letters, digits, dashes or underscores."
         )
@@ -22,7 +26,7 @@ def declare_actor_for(Model, meth, queue_name="default",
     broker = dramatiq.get_broker()
     invalid_options = set(options) - broker.actor_options
     if invalid_options:
-        raise ValueError(
+        raise AnyBlokActorException(
             (
                 "The following actor options are undefined: "
                 "{%s}. Did you forget to add a middleware "
@@ -33,12 +37,12 @@ def declare_actor_for(Model, meth, queue_name="default",
     real_function = getattr(Model, meth)
 
     if isinstance(real_function, Actor):
-        raise ValueError(
+        raise AnyBlokActorException(
             "The actor %r is declared two time as an actor" % actor_name
         )
 
     if not hasattr(real_function, '__self__'):
-        raise ValueError(
+        raise AnyBlokActorException(
             "The actor %r must be declared on a classmethod" % actor_name
         )
 
