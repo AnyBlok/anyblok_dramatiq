@@ -26,11 +26,15 @@ class TestMiddleWare(DramatiqDBTestCase):
             message.status,
             registry.Dramatiq.Message.STATUS_NEW
         )
+        self.assertEqual(len(message.histories), 1)
         self.broker.emit_before('enqueue', MockMessage(message_id), None)
         self.assertEqual(
             message.status,
             registry.Dramatiq.Message.STATUS_ENQUEUED
         )
+        self.assertEqual(len(message.histories), 2)
+        self.assertEqual(message.updated_at, message.histories[1].created_at)
+        self.assertEqual(message.status, message.histories[1].status)
 
     def test_before_enqueue_with_delay(self):
         registry = self.init_registry(None)
@@ -41,11 +45,15 @@ class TestMiddleWare(DramatiqDBTestCase):
             message.status,
             registry.Dramatiq.Message.STATUS_NEW
         )
+        self.assertEqual(len(message.histories), 1)
         self.broker.emit_before('enqueue', MockMessage(message_id), 1000)
         self.assertEqual(
             message.status,
             registry.Dramatiq.Message.STATUS_DELAYED
         )
+        self.assertEqual(len(message.histories), 2)
+        self.assertEqual(message.updated_at, message.histories[1].created_at)
+        self.assertEqual(message.status, message.histories[1].status)
 
     def test_before_process_message(self):
         registry = self.init_registry(None)
@@ -56,11 +64,15 @@ class TestMiddleWare(DramatiqDBTestCase):
             message.status,
             registry.Dramatiq.Message.STATUS_NEW
         )
+        self.assertEqual(len(message.histories), 1)
         self.broker.emit_before('process_message', MockMessage(message_id))
         self.assertEqual(
             message.status,
             registry.Dramatiq.Message.STATUS_RUNNING
         )
+        self.assertEqual(len(message.histories), 2)
+        self.assertEqual(message.updated_at, message.histories[1].created_at)
+        self.assertEqual(message.status, message.histories[1].status)
 
     def test_after_process_message(self):
         registry = self.init_registry(None)
@@ -71,11 +83,15 @@ class TestMiddleWare(DramatiqDBTestCase):
             message.status,
             registry.Dramatiq.Message.STATUS_NEW
         )
+        self.assertEqual(len(message.histories), 1)
         self.broker.emit_after('process_message', MockMessage(message_id))
         self.assertEqual(
             message.status,
             registry.Dramatiq.Message.STATUS_DONE
         )
+        self.assertEqual(len(message.histories), 2)
+        self.assertEqual(message.updated_at, message.histories[1].created_at)
+        self.assertEqual(message.status, message.histories[1].status)
 
     def test_after_process_message_with_exception(self):
         registry = self.init_registry(None)
@@ -86,12 +102,16 @@ class TestMiddleWare(DramatiqDBTestCase):
             message.status,
             registry.Dramatiq.Message.STATUS_NEW
         )
+        self.assertEqual(len(message.histories), 1)
         self.broker.emit_after('process_message', MockMessage(message_id),
                                exception=Exception('test'))
         self.assertEqual(
             message.status,
             registry.Dramatiq.Message.STATUS_FAILED
         )
+        self.assertEqual(len(message.histories), 2)
+        self.assertEqual(message.updated_at, message.histories[1].created_at)
+        self.assertEqual(message.status, message.histories[1].status)
 
     def test_after_process_message_with_db_exception(self):
         registry = self.init_registry(None)

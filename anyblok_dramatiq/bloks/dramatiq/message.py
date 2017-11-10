@@ -6,9 +6,11 @@
 # v. 2.0. If a copy of the MPL was not distributed with this file,You can
 # obtain one at http://mozilla.org/MPL/2.0/.
 from anyblok import Declarations
-from anyblok.column import UUID, Selection, DateTime, Json
+from anyblok.column import Integer, UUID, Selection, DateTime, Json
+from anyblok.relationship import Many2One
 from datetime import datetime
 from dramatiq import Message as DramatiqMessage, get_broker, Actor
+from sqlalchemy.schema import UniqueConstraint
 import json
 from logging import getLogger
 
@@ -16,7 +18,7 @@ logger = getLogger(__name__)
 
 
 @Declarations.register(Declarations.Model)
-class Dramatiq():
+class Dramatiq:
     """No SQL Model, use to get tools for dramatiq messaging"""
 
     @classmethod
@@ -58,8 +60,8 @@ class Dramatiq():
             broker.enqueue(message, delay=delay)
 
 
-@Declarations.register(Declarations.Model.Dramatiq)
-class Message():
+@Declarations.register(Declarations.Mixin)
+class DramatiqMessageStatus:
 
     STATUS_NEW = "new"
     STATUS_ENQUEUED = "enqueued"
@@ -77,12 +79,42 @@ class Message():
         (STATUS_DONE, "Done"),
     ]
 
-    id = UUID(primary_key=True, nullable=False)
-    status = Selection(selections=STATUSES, default=STATUS_NEW)
+    status = Selection(
+        selections=STATUSES, default=STATUS_NEW, nullable=False
+    )
     created_at = DateTime(nullable=False, default=datetime.now)
-    updated_at = DateTime(nullable=False, default=datetime.now)
+
+
+@Declarations.register(Declarations.Model.Dramatiq)
+class Message(Declarations.Mixin.DramatiqMessageStatus):
+
+    id = UUID(primary_key=True, nullable=False)
+    updated_at = DateTime()
     message = Json(nullable=False)
+
+    def __init__(self, *args, **kwargs):
+        super(Message, self).__init__(*args, **kwargs)
+        self.update_status(self.status)
 
     @classmethod
     def get_instance_of(cls, message):
         return cls.query().filter(cls.id == message.message_id).one_or_none()
+
+    def update_status(self, status):
+        self.status = status
+        self.updated_at = datetime.now()
+        self.registry.Dramatiq.Message.History.insert(
+            status=status, created_at=self.updated_at, message=self)
+
+
+@Declarations.register(Declarations.Model.Dramatiq.Message)
+class History(Declarations.Mixin.DramatiqMessageStatus):
+
+    id = Integer(primary_key=True)
+    message = Many2One(model=Declarations.Model.Dramatiq.Message,
+                       one2many="histories", nullable=False,
+                       foreign_key_options={'ondelete': 'cascade'})
+
+    @classmethod
+    def define_table_args(cls):
+        return (UniqueConstraint(cls.status, cls.dramatiq_message_id),)
