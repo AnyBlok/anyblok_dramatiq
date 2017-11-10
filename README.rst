@@ -24,8 +24,8 @@
     :target: https://doc.anyblok-dramatiq.anyblok.org/?badge=latest
 
 
-AnyBlok Dramatiq
-===================
+AnyBlok / Dramatiq
+==================
 
 Improve AnyBlok `AnyBlok <http://doc.anyblok.org>`_ to add distributed actor (agent)
 with `dramatiq <https://dramatiq.io>`_.
