@@ -20,8 +20,7 @@ def prepare_broker(withmiddleware=True):
         middleware = [x() for x in middleware]
 
     options = {
-        "host": Configuration.get('dramatiq_broker_host'),
-        "port": Configuration.get('dramatiq_broker_port'),
+        "url": Configuration.get('dramatiq_broker_url'),
         "heartbeat_interval": Configuration.get(
             'dramatiq_broker_heartbeat_interval'
         ),

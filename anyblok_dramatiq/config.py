@@ -45,18 +45,12 @@ def define_dramatiq_broker(group):
                            'dramatiq.brokers.rabbitmq:RabbitmqBroker'
                        ),
                        help='broker to use for communication with dramatiq')
-    group.add_argument('--dramatiq-broker-host',
+    group.add_argument('--dramatiq-broker-url',
                        default=os.environ.get(
-                           'ANYBLOK_DRAMATIQ_BROKER_HOST',
-                           'localhost'
+                           'ANYBLOK_DRAMATIQ_BROKER_URL',
+                           'amqp://guest:guest@127.0.0.1:5672'
                        ),
-                       help="Broker's hostname")
-    group.add_argument('--dramatiq-broker-port', type=int,
-                       default=os.environ.get(
-                           'ANYBLOK_DRAMATIQ_BROKER_PORT',
-                           5672
-                       ),
-                       help="Broker port")
+                       help="url to connect to the broker")
     group.add_argument('--dramatiq-broker-heartbeat-interval', type=int,
                        default=os.environ.get(
                            'ANYBLOK_DRAMATIQ_BROKER_HEARTBEAT_INTERVAL',
