@@ -7,6 +7,9 @@
 # obtain one at http://mozilla.org/MPL/2.0/.
 import dramatiq
 from dramatiq.actor import _queue_name_re, Actor
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class AnyBlokActorException(ValueError):
@@ -17,6 +20,7 @@ def declare_actor_for(Model, meth, queue_name="default",
                       priority=0, **options):
     db_name = Model.registry.db_name
     actor_name = db_name + ':' + Model.__registry_name__ + '=>' + meth
+    logger.info("Declare the actor : %r", actor_name)
     if not _queue_name_re.fullmatch(queue_name):
         raise AnyBlokActorException(
             "Queue names must start with a letter or an underscore followed "

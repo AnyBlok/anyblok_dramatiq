@@ -9,6 +9,9 @@ from dramatiq import set_broker
 from dramatiq.brokers.rabbitmq import RabbitmqBroker
 from anyblok.config import Configuration
 from .middleware import DramatiqMessageMiddleware
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 def prepare_broker(withmiddleware=True):
@@ -30,4 +33,5 @@ def prepare_broker(withmiddleware=True):
     }
     broker = broker_cls(middleware=middleware, **options)
     set_broker(broker)
+    logger.info("Initialisation of the broker : %r", broker)
     return broker
