@@ -27,6 +27,7 @@ def worker_process(worker_id, logging_fd):
         logging_pipe = os.fdopen(logging_fd, "w")
         broker = prepare_broker(withmiddleware=True)
         broker.emit_after("process_boot")
+        BlokManager.load()
         registry = RegistryManager.get(db_name)
         if registry is None:
             logger.critical("No registry found for %s", db_name)
@@ -44,6 +45,7 @@ def worker_process(worker_id, logging_fd):
 
     def termhandler(signum, frame):
         nonlocal running
+        BlokManager.unload()
         if running:
             logger.info("Stopping worker process...")
             running = False
@@ -73,12 +75,10 @@ def dramatiq(application, configuration_groups, **kwargs):
     :param \**kwargs: ArgumentParser named arguments
     """
     format_configuration(configuration_groups,
-                         'create_db', 'install-bloks',
-                         'install-or-update-bloks')
+                         'dramatiq-broker', 'dramatiq-consumer')
     load_init_function_from_entry_points()
     Configuration.load(application, configuration_groups=configuration_groups,
                        **kwargs)
-    BlokManager.load()
 
     worker_pipes = []
     worker_processes = []

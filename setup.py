@@ -65,6 +65,9 @@ setup(
         'anyblok.init': [
             'dramatiq_config=anyblok_dramatiq:anyblok_init_config',
         ],
+        'anyblok_configuration.post_load': [
+            'dramatiq_broker=anyblok_dramatiq:anyblok_load_broker',
+        ],
         'test_bloks': [
             'test_dramatiq_1=anyblok_dramatiq.test_bloks.test_1:TestBlok1',
         ],
@@ -80,6 +83,7 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     test_suite='tests',
     tests_require=requirements + ['nose'],
