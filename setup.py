@@ -8,15 +8,8 @@
 # obtain one at http://mozilla.org/MPL/2.0/.
 from setuptools import setup, find_packages
 import os
-import sys
 
 version = '0.1.0'
-
-
-if sys.version_info < (3, 6):
-    sys.stderr.write("This package requires Python 3.6 or newer. "
-                     "Yours is " + sys.version + os.linesep)
-    sys.exit(1)
 
 
 here = os.path.abspath(os.path.dirname(__file__))
