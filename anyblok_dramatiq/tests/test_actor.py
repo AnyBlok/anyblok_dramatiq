@@ -24,6 +24,9 @@ def add_in_registry():
         def add(cls, name):
             cls.insert(name=name)
 
+        def add_without_class_method(self):
+            pass
+
 
 class TestActor(DramatiqDBTestCase):
 
@@ -38,6 +41,11 @@ class TestActor(DramatiqDBTestCase):
         declare_actor_for(registry.Task, 'add')
         with self.assertRaises(ValueError):
             declare_actor_for(registry.Task, 'add')
+
+    def test_declare_actor_for_with_on_another_than_class_method(self):
+        registry = self.init_registry(add_in_registry)
+        with self.assertRaises(ValueError):
+            declare_actor_for(registry.Task, 'add_without_class_method')
 
     def test_declare_actor_for_with_bad_queue_name(self):
         registry = self.init_registry(add_in_registry)

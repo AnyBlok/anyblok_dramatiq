@@ -37,6 +37,11 @@ def declare_actor_for(Model, meth, queue_name="default",
             "The actor %r is declared two time as an actor" % actor_name
         )
 
+    if not hasattr(real_function, '__self__'):
+        raise ValueError(
+            "The actor %r must be declared on a classmethod" % actor_name
+        )
+
     def fn(*a, **kw):
         return real_function(*a, **kw)
 
