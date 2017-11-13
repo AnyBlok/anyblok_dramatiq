@@ -23,6 +23,15 @@ Configuration.applications.update({
 })
 
 
+Configuration.add_configuration_groups('createdb', ['dramatiq-broker'])
+Configuration.add_configuration_groups('updatedb', ['dramatiq-broker'])
+Configuration.add_configuration_groups('nose', ['dramatiq-broker'])
+Configuration.add_configuration_groups('interpreter', ['dramatiq-broker'])
+Configuration.add_configuration_groups('worker', ['dramatiq-broker'])
+Configuration.add_configuration_groups('pyramid', ['dramatiq-broker'])
+Configuration.add_configuration_groups('gunicorn', ['dramatiq-broker'])
+
+
 @Configuration.add('dramatiq-consumer', label="Dramatiq - consumer options",
                    must_be_loaded_by_unittest=True)
 def define_dramatiq_consumer(group):
