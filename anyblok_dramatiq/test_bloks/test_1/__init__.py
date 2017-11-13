@@ -26,4 +26,4 @@ class TestBlok1(Blok):
 
     @classmethod
     def declare_actors(cls, registry):
-        declare_actor_for(registry.Task, 'add')
+        declare_actor_for(registry.Task.add)

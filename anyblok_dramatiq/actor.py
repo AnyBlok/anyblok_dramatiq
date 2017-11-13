@@ -16,10 +16,16 @@ class AnyBlokActorException(ValueError):
     """A ValueError exception for anyblok_dramatiq"""
 
 
-def declare_actor_for(Model, meth, queue_name="default",
-                      priority=0, **options):
+def declare_actor_for(method, queue_name="default", priority=0, **options):
+    if not hasattr(method, '__self__'):
+        raise AnyBlokActorException(
+            "The method %r must be declared as a classmethod" % method
+        )
+
+    Model = method.__self__
     db_name = Model.registry.db_name
-    actor_name = db_name + ':' + Model.__registry_name__ + '=>' + meth
+    registry_name = Model.__registry_name__
+    actor_name = db_name + ':' + registry_name + '=>' + method.__name__
     logger.info("Declare the actor : %r", actor_name)
     if not _queue_name_re.fullmatch(queue_name):
         raise AnyBlokActorException(
@@ -38,20 +44,13 @@ def declare_actor_for(Model, meth, queue_name="default",
             ) % ', '.join(invalid_options)
         )
 
-    real_function = getattr(Model, meth)
-
-    if isinstance(real_function, Actor):
+    if isinstance(method, Actor):
         raise AnyBlokActorException(
             "The actor %r is declared two time as an actor" % actor_name
         )
 
-    if not hasattr(real_function, '__self__'):
-        raise AnyBlokActorException(
-            "The actor %r must be declared on a classmethod" % actor_name
-        )
-
     def fn(*a, **kw):
-        return real_function(*a, **kw)
+        return method(*a, **kw)
 
     actor = Actor(
         fn, actor_name=actor_name,
@@ -60,4 +59,4 @@ def declare_actor_for(Model, meth, queue_name="default",
         broker=broker,
         options=options,
     )
-    setattr(Model, meth, actor)
+    setattr(Model, method.__name__, actor)

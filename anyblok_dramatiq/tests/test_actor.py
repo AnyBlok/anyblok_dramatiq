@@ -33,26 +33,26 @@ class TestActor(DramatiqDBTestCase):
     def test_declare_actor_for(self):
         registry = self.init_registry(add_in_registry)
         self.assertFalse(isinstance(registry.Task.add, Actor))
-        declare_actor_for(registry.Task, 'add')
+        declare_actor_for(registry.Task.add)
         self.assertTrue(isinstance(registry.Task.add, Actor))
 
     def test_declare_actor_for_twice(self):
         registry = self.init_registry(add_in_registry)
-        declare_actor_for(registry.Task, 'add')
+        declare_actor_for(registry.Task.add)
         with self.assertRaises(AnyBlokActorException):
-            declare_actor_for(registry.Task, 'add')
+            declare_actor_for(registry.Task.add)
 
     def test_declare_actor_for_with_on_another_than_class_method(self):
         registry = self.init_registry(add_in_registry)
         with self.assertRaises(AnyBlokActorException):
-            declare_actor_for(registry.Task, 'add_without_class_method')
+            declare_actor_for(registry.Task.add_without_class_method)
 
     def test_declare_actor_for_with_bad_queue_name(self):
         registry = self.init_registry(add_in_registry)
         with self.assertRaises(AnyBlokActorException):
-            declare_actor_for(registry.Task, 'add', queue_name='12345')
+            declare_actor_for(registry.Task.add, queue_name='12345')
 
     def test_declare_actor_for_with_bad_broker_option(self):
         registry = self.init_registry(add_in_registry)
         with self.assertRaises(AnyBlokActorException):
-            declare_actor_for(registry.Task, 'add', bad_broker_options='12345')
+            declare_actor_for(registry.Task.add, bad_broker_options='12345')
