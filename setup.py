@@ -71,6 +71,9 @@ setup(
         'test_bloks': [
             'test_dramatiq_1=anyblok_dramatiq.test_bloks.test_1:TestBlok1',
         ],
+        'anyblok.model.plugin': [
+            'dramatic_actor=anyblok_dramatiq.actor:ActorPlugin',
+        ],
     },
     include_package_data=True,
     install_requires=requirements,

@@ -7,7 +7,7 @@
 # obtain one at http://mozilla.org/MPL/2.0/.
 from .testcase import DramatiqDBTestCase
 from anyblok.column import Integer, String
-from anyblok_dramatiq import declare_actor_for, AnyBlokActorException
+from anyblok_dramatiq import declare_actor_for, actor, AnyBlokActorException
 from dramatiq.actor import Actor
 
 
@@ -56,3 +56,289 @@ class TestActor(DramatiqDBTestCase):
         registry = self.init_registry(add_in_registry)
         with self.assertRaises(AnyBlokActorException):
             declare_actor_for(registry.Task.add, bad_broker_options='12345')
+
+    def test_decorator_actor(self):
+
+        def add_in_registry():
+
+            from anyblok import Declarations
+
+            @Declarations.register(Declarations.Model)
+            class Task:
+
+                id = Integer(primary_key=True)
+
+                @actor()
+                def add(cls, val):
+                    return val
+
+        registry = self.init_registry(add_in_registry)
+        self.assertTrue(isinstance(registry.Task.add, Actor))
+        self.assertEqual(registry.Task.add(1), 1)
+
+    def test_decorator_actor_with_options(self):
+
+        def add_in_registry():
+
+            from anyblok import Declarations
+
+            @Declarations.register(Declarations.Model)
+            class Task:
+
+                id = Integer(primary_key=True)
+
+                @actor(queue_name="other", priority=1)
+                def add(cls, val):
+                    return val
+
+        registry = self.init_registry(add_in_registry)
+        self.assertTrue(isinstance(registry.Task.add, Actor))
+        self.assertEqual(registry.Task.add(1), 1)
+        self.assertEqual(registry.Task.add.queue_name, "other")
+        self.assertEqual(registry.Task.add.priority, 1)
+
+    def test_decorator_actor_with_inherit_Model_1(self):
+
+        def add_in_registry():
+
+            from anyblok import Declarations
+
+            @Declarations.register(Declarations.Model)
+            class Task:
+
+                id = Integer(primary_key=True)
+
+                @actor()
+                def add(cls, val):
+                    return val
+
+            @Declarations.register(Declarations.Model)  # noqa
+            class Task:
+
+                id = Integer(primary_key=True)
+
+                @actor()
+                def add(cls, val):
+                    return super(Task, cls).add(val) * 2
+
+        registry = self.init_registry(add_in_registry)
+        self.assertTrue(isinstance(registry.Task.add, Actor))
+        self.assertEqual(registry.Task.add(1), 2)
+
+    def test_decorator_actor_with_inherit_Model_2(self):
+
+        def add_in_registry():
+
+            from anyblok import Declarations
+
+            @Declarations.register(Declarations.Model)
+            class Task:
+
+                id = Integer(primary_key=True)
+
+                @classmethod
+                def add(cls, val):
+                    return val
+
+            @Declarations.register(Declarations.Model)  # noqa
+            class Task:
+
+                id = Integer(primary_key=True)
+
+                @actor()
+                def add(cls, val):
+                    return super(Task, cls).add(val) * 2
+
+        registry = self.init_registry(add_in_registry)
+        self.assertTrue(isinstance(registry.Task.add, Actor))
+        self.assertEqual(registry.Task.add(1), 2)
+
+    def test_decorator_actor_with_inherit_Model_3(self):
+
+        def add_in_registry():
+
+            from anyblok import Declarations
+
+            @Declarations.register(Declarations.Model)
+            class Task:
+
+                id = Integer(primary_key=True)
+
+                @actor()
+                def add(cls, val):
+                    return val
+
+            @Declarations.register(Declarations.Model)  # noqa
+            class Task:
+
+                id = Integer(primary_key=True)
+
+                @classmethod
+                def add(cls, val):
+                    return super(Task, cls).add(val) * 2
+
+        registry = self.init_registry(add_in_registry)
+        self.assertTrue(isinstance(registry.Task.add, Actor))
+        self.assertEqual(registry.Task.add(1), 2)
+
+    def test_decorator_actor_with_inherit_Mixin_1(self):
+
+        def add_in_registry():
+
+            from anyblok import Declarations
+
+            @Declarations.register(Declarations.Mixin)
+            class MixinTest:
+
+                id = Integer(primary_key=True)
+
+                @actor()
+                def add(cls, val):
+                    return val
+
+            @Declarations.register(Declarations.Model)
+            class Task(Declarations.Mixin.MixinTest):
+
+                id = Integer(primary_key=True)
+
+                @actor()
+                def add(cls, val):
+                    return super(Task, cls).add(val) * 2
+
+        registry = self.init_registry(add_in_registry)
+        self.assertTrue(isinstance(registry.Task.add, Actor))
+        self.assertEqual(registry.Task.add(1), 2)
+
+    def test_decorator_actor_with_inherit_Mixin_2(self):
+
+        def add_in_registry():
+
+            from anyblok import Declarations
+
+            @Declarations.register(Declarations.Mixin)
+            class MixinTest:
+
+                id = Integer(primary_key=True)
+
+                @actor()
+                def add(cls, val):
+                    return val
+
+            @Declarations.register(Declarations.Model)
+            class Task(Declarations.Mixin.MixinTest):
+
+                id = Integer(primary_key=True)
+
+                @classmethod
+                def add(cls, val):
+                    return super(Task, cls).add(val) * 2
+
+        registry = self.init_registry(add_in_registry)
+        self.assertTrue(isinstance(registry.Task.add, Actor))
+        self.assertEqual(registry.Task.add(1), 2)
+
+    def test_decorator_actor_with_inherit_Mixin_3(self):
+
+        def add_in_registry():
+
+            from anyblok import Declarations
+
+            @Declarations.register(Declarations.Mixin)
+            class MixinTest:
+
+                id = Integer(primary_key=True)
+
+                @classmethod
+                def add(cls, val):
+                    return val
+
+            @Declarations.register(Declarations.Model)
+            class Task(Declarations.Mixin.MixinTest):
+
+                id = Integer(primary_key=True)
+
+                @actor()
+                def add(cls, val):
+                    return super(Task, cls).add(val) * 2
+
+        registry = self.init_registry(add_in_registry)
+        self.assertTrue(isinstance(registry.Task.add, Actor))
+        self.assertEqual(registry.Task.add(1), 2)
+
+    def test_decorator_actor_with_inherit_Core_1(self):
+
+        def add_in_registry():
+
+            from anyblok import Declarations
+
+            @Declarations.register(Declarations.Core)
+            class SqlBase:
+
+                @actor()
+                def add(cls, val):
+                    return val
+
+            @Declarations.register(Declarations.Model)  # noqa
+            class Task:
+
+                id = Integer(primary_key=True)
+
+                @actor()
+                def add(cls, val):
+                    return super(Task, cls).add(val) * 2
+
+        registry = self.init_registry(add_in_registry)
+        self.assertTrue(isinstance(registry.Task.add, Actor))
+        self.assertEqual(registry.Task.add(1), 2)
+
+    def test_decorator_actor_with_inherit_Core_2(self):
+
+        def add_in_registry():
+
+            from anyblok import Declarations
+
+            @Declarations.register(Declarations.Core)
+            class SqlBase:
+
+                @actor()
+                def add(cls, val):
+                    return val
+
+            @Declarations.register(Declarations.Model)  # noqa
+            class Task:
+
+                id = Integer(primary_key=True)
+
+                @classmethod
+                def add(cls, val):
+                    return super(Task, cls).add(val) * 2
+
+        registry = self.init_registry(add_in_registry)
+        self.assertTrue(isinstance(registry.Task.add, Actor))
+        self.assertEqual(registry.Task.add(1), 2)
+
+    def test_decorator_actor_with_inherit_Core_3(self):
+
+        def add_in_registry():
+
+            from anyblok import Declarations
+
+            @Declarations.register(Declarations.Core)
+            class SqlBase:
+
+                @classmethod
+                def add(cls, val):
+                    return val
+
+            @Declarations.register(Declarations.Model)  # noqa
+            class Task:
+
+                id = Integer(primary_key=True)
+
+                @actor()
+                def add(cls, val):
+                    return super(Task, cls).add(val) * 2
+
+        registry = self.init_registry(add_in_registry)
+        self.assertTrue(isinstance(registry.Task.add, Actor))
+        self.assertEqual(registry.Task.add(1), 2)
