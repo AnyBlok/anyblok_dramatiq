@@ -1,3 +1,2 @@
 include doc/*.rst
-recursive-include anyblok_dramatiq/test_bloks */*.rst
 recursive-include anyblok_dramatiq/bloks */*.rst
