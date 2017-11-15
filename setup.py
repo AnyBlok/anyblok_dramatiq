@@ -38,7 +38,7 @@ anyblok_init = [
 
 requirements = [
     'anyblok',
-    'dramatiq',
+    'dramatiq>=0.12.0',
 ]
 
 extras = ("memcached", "rabbitmq", "redis", "watch")
