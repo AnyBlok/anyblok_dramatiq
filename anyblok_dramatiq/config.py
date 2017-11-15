@@ -28,8 +28,14 @@ Configuration.add_configuration_groups('updatedb', ['dramatiq-broker'])
 Configuration.add_configuration_groups('nose', ['dramatiq-broker'])
 Configuration.add_configuration_groups('interpreter', ['dramatiq-broker'])
 Configuration.add_configuration_groups('worker', ['dramatiq-broker'])
-Configuration.add_configuration_groups('pyramid', ['dramatiq-broker'])
-Configuration.add_configuration_groups('gunicorn', ['dramatiq-broker'])
+
+try:
+    # import the configuration to get application
+    import anyblok_pyramid.config  # noqa
+    Configuration.add_configuration_groups('pyramid', ['dramatiq-broker'])
+    Configuration.add_configuration_groups('gunicorn', ['dramatiq-broker'])
+except ImportError:
+    pass
 
 
 @Configuration.add('dramatiq-consumer', label="Dramatiq - consumer options",
