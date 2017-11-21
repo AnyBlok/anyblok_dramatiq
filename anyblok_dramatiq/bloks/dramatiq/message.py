@@ -25,10 +25,12 @@ class Dramatiq:
     def create_message(cls, actor, *args, **kwargs):
         """Prepare a message and add an entry in the Message Model
         :param actor: an Actor instance
+        :param delay: use for postcommit hook send2broker
         :param _*args: args of the actor
         :param _*_*kwargs: kwargs of the actor
         :rtype: dramatiq message instance
         """
+        delay = kwargs.pop('delay', None)
         if not isinstance(actor, Actor):
             logger.warning(
                 "[create_message] can't work without an actor"
@@ -46,6 +48,7 @@ class Dramatiq:
             id=message.message_id,
             message=loads(message.encode())
         )
+        cls.postcommit_hook('send2broker', message, delay=delay)
         return message
 
     @classmethod

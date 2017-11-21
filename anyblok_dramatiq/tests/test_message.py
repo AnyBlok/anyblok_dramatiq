@@ -7,6 +7,7 @@
 # obtain one at http://mozilla.org/MPL/2.0/.
 from .testcase import DramatiqDBTestCase
 from uuid import uuid4
+from anyblok.environment import EnvironmentManager
 
 
 class TestMessage(DramatiqDBTestCase):
@@ -27,6 +28,13 @@ class TestMessage(DramatiqDBTestCase):
         self.assertEqual(len(message.histories), 1)
         self.assertEqual(message.histories[0].created_at, message.updated_at)
         self.assertEqual(message.histories[0].status, message.status)
+
+    def test_create_message_add_postcommit_hook(self):
+        registry = self.init_registry(None)
+        registry.upgrade(install=('test_dramatiq_1',))
+        self.assertFalse(EnvironmentManager.get('_postcommit_hook'))
+        registry.Dramatiq.create_message(registry.Task.add, name='test')
+        self.assertTrue(EnvironmentManager.get('_postcommit_hook'))
 
     def test_create_2_message(self):
         registry = self.init_registry(None)
