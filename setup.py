@@ -37,6 +37,7 @@ anyblok_init = [
 ]
 
 requirements = [
+    'simplejson',
     'anyblok',
     'dramatiq>=0.12.0',
 ]

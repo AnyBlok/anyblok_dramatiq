@@ -11,7 +11,7 @@ from anyblok.relationship import Many2One
 from datetime import datetime
 from dramatiq import Message as DramatiqMessage, get_broker, Actor
 from sqlalchemy.schema import UniqueConstraint
-import json
+from simplejson import loads
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -44,7 +44,7 @@ class Dramatiq:
         message.broker = actor.broker
         cls.Message.insert(
             id=message.message_id,
-            message=json.loads(message.encode())
+            message=loads(message.encode())
         )
         return message
 
