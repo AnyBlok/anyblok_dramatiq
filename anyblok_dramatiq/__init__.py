@@ -5,7 +5,14 @@
 # This Source Code Form is subject to the terms of the Mozilla Public License,
 # v. 2.0. If a copy of the MPL was not distributed with this file,You can
 # obtain one at http://mozilla.org/MPL/2.0/.
-from .actor import declare_actor_for, actor, AnyBlokActorException  # noqa
+from .actor import ( # noqa
+    declare_actor_for,
+    declare_actor_send_for,
+    actor,
+    actor_send,
+    AnyBlokActor,
+    AnyBlokActorException
+)
 from .broker import prepare_broker
 
 

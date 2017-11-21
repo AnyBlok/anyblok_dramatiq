@@ -74,6 +74,7 @@ setup(
         ],
         'anyblok.model.plugin': [
             'dramatic_actor=anyblok_dramatiq.actor:ActorPlugin',
+            'dramatic_actor_send=anyblok_dramatiq.actor:ActorSendPlugin',
         ],
     },
     include_package_data=True,

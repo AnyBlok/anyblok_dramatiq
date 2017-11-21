@@ -18,7 +18,15 @@ class AnyBlokActorException(ValueError):
     """A ValueError exception for anyblok_dramatiq"""
 
 
-def declare_actor_for(method, queue_name="default", priority=0, **options):
+class AnyBlokActor(Actor):
+
+    def __call__(self, *args, **kwargs):
+        return self.fn.registry.Dramatiq.create_message(
+            self.fn.actor, *args, **kwargs)
+
+
+def _declare_actor_for(ActorCls, method, queue_name="default", priority=0,
+                       **options):
     if not hasattr(method, '__self__'):
         raise AnyBlokActorException(
             "The method %r must be declared as a classmethod" % method
@@ -46,7 +54,7 @@ def declare_actor_for(method, queue_name="default", priority=0, **options):
             ) % ', '.join(invalid_options)
         )
 
-    if isinstance(method, Actor):
+    if isinstance(method, ActorCls):
         raise AnyBlokActorException(
             "The actor %r is declared two time as an actor" % actor_name
         )
@@ -54,14 +62,28 @@ def declare_actor_for(method, queue_name="default", priority=0, **options):
     def fn(*a, **kw):
         return method(*a, **kw)
 
-    actor = Actor(
+    setattr(fn, 'registry', Model.registry)
+    setattr(fn, 'method', method)
+
+    actor = ActorCls(
         fn, actor_name=actor_name,
         queue_name=queue_name,
         priority=priority,
         broker=broker,
         options=options,
     )
+    setattr(fn, 'actor', actor)
     setattr(Model, method.__name__, actor)
+    logger.debug('declare actor on "%s:%s"',
+                 Model.__registry_name__, method.__name__)
+
+
+def declare_actor_for(method, **kwargs):
+    _declare_actor_for(Actor, method, **kwargs)
+
+
+def declare_actor_send_for(method, **kwargs):
+    _declare_actor_for(AnyBlokActor, method, **kwargs)
 
 
 def actor(queue_name="default", priority=0, **options):
@@ -74,6 +96,22 @@ def actor(queue_name="default", priority=0, **options):
     def wrapper(method):
         add_autodocs(method, autodoc)
         method.is_a_dramatiq_actor = True
+        method.kwargs = kwargs
+        return classmethod(method)
+
+    return wrapper
+
+
+def actor_send(queue_name="default", priority=0, **options):
+    kwargs = {'queue_name': queue_name, 'priority': priority}
+    kwargs.update(options)
+    autodoc = """
+        **actor_send** event call with positionnal argument %(kwargs)r
+    """ % dict(kwargs=kwargs)
+
+    def wrapper(method):
+        add_autodocs(method, autodoc)
+        method.is_a_dramatiq_actor_send = True
         method.kwargs = kwargs
         return classmethod(method)
 
@@ -142,3 +180,67 @@ class ActorPlugin(ModelPluginBase):
             method = getattr(base, actor)
             kwargs = transformation_properties['dramatiq_actors'][actor]
             declare_actor_for(method, **kwargs)
+
+
+class ActorSendPlugin(ModelPluginBase):
+
+    def initialisation_tranformation_properties(self, properties,
+                                                transformation_properties):
+        """ Initialise the transform properties
+
+        :param properties: the properties declared in the model
+        :param new_type_properties: param to add in a new base if need
+        """
+        if 'dramatiq_actors_send' not in transformation_properties:
+            transformation_properties['dramatiq_actors_send'] = {}
+
+    def transform_base_attribute(self, attr, method, namespace, base,
+                                 transformation_properties,
+                                 new_type_properties):
+        """ transform the attribute for the final Model
+
+        :param attr: attribute name
+        :param method: method pointer of the attribute
+        :param namespace: the namespace of the model
+        :param base: One of the base of the model
+        :param transformation_properties: the properties of the model
+        :param new_type_properties: param to add in a new base if need
+        """
+        tp = transformation_properties
+        if hasattr(method, 'is_a_dramatiq_actor_send'):
+            if method.is_a_dramatiq_actor_send:
+                if attr not in tp['dramatiq_actors_send']:
+                    tp['dramatiq_actors_send'][attr] = {}
+
+                tp['dramatiq_actors_send'][attr].update(method.kwargs)
+
+    def insert_in_bases(self, new_base, namespace, properties,
+                        transformation_properties):
+        """Insert in a base the overload
+
+        :param new_base: the base to be put on front of all bases
+        :param namespace: the namespace of the model
+        :param properties: the properties declared in the model
+        :param transformation_properties: the properties of the model
+        """
+        for actor in transformation_properties['dramatiq_actors_send']:
+
+            def wrapper(*args, **kwargs):
+                cls = args[0]
+                return getattr(super(new_base, cls), actor)(*args[1:], **kwargs)
+
+            wrapper.__name__ = actor
+            setattr(new_base, actor, classmethod(wrapper))
+
+    def after_model_construction(self, base, namespace,
+                                 transformation_properties):
+        """Do some action with the constructed Model
+
+        :param base: the Model class
+        :param namespace: the namespace of the model
+        :param transformation_properties: the properties of the model
+        """
+        for actor in transformation_properties['dramatiq_actors_send']:
+            method = getattr(base, actor)
+            kwargs = transformation_properties['dramatiq_actors_send'][actor]
+            declare_actor_send_for(method, **kwargs)
