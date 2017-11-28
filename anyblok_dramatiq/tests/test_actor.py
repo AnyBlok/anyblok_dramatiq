@@ -39,30 +39,6 @@ def add_in_registry():
 
 class TestActor(DramatiqDBTestCase):
 
-    def init_registry_with_bloks(self, bloks, function, **kwargs):
-        """ call a function to filled the blok manager with new model
-
-        :param function: function to call
-        :param kwargs: kwargs for the function
-        :rtype: registry instance
-        """
-        from copy import deepcopy
-        loaded_bloks = deepcopy(RegistryManager.loaded_bloks)
-        if function is not None:
-            EnvironmentManager.set('current_blok', 'anyblok-core')
-            try:
-                function(**kwargs)
-            finally:
-                EnvironmentManager.set('current_blok', None)
-
-        try:
-            self.registry = registry = self.__class__.getRegistry()
-            registry.upgrade(install=bloks)
-        finally:
-            RegistryManager.loaded_bloks = loaded_bloks
-
-        return registry
-
     def test_declare_actor_for(self):
         registry = self.init_registry(add_in_registry)
         self.assertFalse(isinstance(registry.Task.add, Actor))
