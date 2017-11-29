@@ -118,6 +118,6 @@ class History(Declarations.Mixin.DramatiqMessageStatus):
                        one2many="histories", nullable=False,
                        foreign_key_options={'ondelete': 'cascade'})
 
-    @classmethod
-    def define_table_args(cls):
-        return (UniqueConstraint(cls.status, cls.dramatiq_message_id),)
+    # @classmethod
+    # def define_table_args(cls):
+    #     return (UniqueConstraint(cls.status, cls.dramatiq_message_id),)
