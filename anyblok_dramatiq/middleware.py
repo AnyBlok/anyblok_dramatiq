@@ -16,9 +16,9 @@ logger = getLogger(__name__)
 class DramatiqMessageMiddleware(Middleware):
 
     def before_enqueue(self, broker, message, delay):
-        logger.debug("[before_enqueue] update message(%s) status ",
-                     message.message_id)
         registry = RegistryManager.get(Configuration.get('db_name'))
+        logger.debug("[before_enqueue] %s: update message(%s) status ",
+                     id(registry.session), message.message_id)
         M = registry.Dramatiq.Message
         m = M.get_instance_of(message)
         if m:
@@ -26,9 +26,9 @@ class DramatiqMessageMiddleware(Middleware):
             registry.commit()
 
     def before_process_message(self, broker, message):
-        logger.debug("[before_process_message] update message(%s) status ",
-                     message.message_id)
         registry = RegistryManager.get(Configuration.get('db_name'))
+        logger.debug("[before_process_message] %s: update message(%s) status ",
+                     id(registry.session), message.message_id)
         M = registry.Dramatiq.Message
         m = M.get_instance_of(message)
         if m:
@@ -37,10 +37,11 @@ class DramatiqMessageMiddleware(Middleware):
 
     def after_process_message(self, broker, message, *,
                               result=None, exception=None):
-        logger.debug("[after_process_message] update message(%s) status "
-                     "with result %r and exception %r",
-                     message.message_id, result, exception)
         registry = RegistryManager.get(Configuration.get('db_name'))
+        logger.debug("[after_process_message] %s: update message(%s) status "
+                     "with result %r and exception %r",
+                     id(registry.session), message.message_id, result,
+                     exception)
         M = registry.Dramatiq.Message
         STATUS_DONE = M.STATUS_DONE
         STATUS_FAILED = M.STATUS_FAILED
@@ -59,12 +60,22 @@ class DramatiqMessageMiddleware(Middleware):
 
             raise e
         finally:
-            registry.session.expire_all()
+            registry.expire_all()
 
-    def _rollback_connection(self, *args, **kwargs):
+    def before_consumer_thread_shutdown(self, *args, **kwargs):
         registry = RegistryManager.get(Configuration.get('db_name'))
-        registry.rollback()
+        logger.debug("[before_consumer_thread_shutdown] %s: %r %r",
+                     id(registry.session), args, kwargs)
+        registry.Session.remove()
 
-    before_consumer_thread_shutdown = _rollback_connection
-    before_worker_thread_shutdown = _rollback_connection
-    before_worker_shutdown = _rollback_connection
+    def before_worker_thread_shutdown(self, *args, **kwargs):
+        registry = RegistryManager.get(Configuration.get('db_name'))
+        logger.debug("[before_worker_thread_shutdown] %s: %r %r",
+                     id(registry.session), args, kwargs)
+        registry.Session.remove()
+
+    def after_worker_shutdown(self, *args, **kwargs):
+        registry = RegistryManager.get(Configuration.get('db_name'))
+        logger.debug("[after_worker_shutdown] %s: %r %r",
+                     id(registry.session), args, kwargs)
+        registry.close()
