@@ -100,11 +100,17 @@ class Message(Declarations.Mixin.DramatiqMessageStatus):
         super(Message, self).__init__(*args, **kwargs)
         self.update_status(self.status)
 
+    def __str__(self):
+        return '<Message (id={self.id}, status={self.status.label})>'.format(
+            self=self)
+
     @classmethod
     def get_instance_of(cls, message):
         return cls.query().filter(cls.id == message.message_id).one_or_none()
 
     def update_status(self, status, error=None):
+        logger.info("Update message %s status => %s",
+                    self, dict(self.STATUSES).get(status))
         self.status = status
         self.updated_at = datetime.now()
         self.registry.Dramatiq.Message.History.insert(

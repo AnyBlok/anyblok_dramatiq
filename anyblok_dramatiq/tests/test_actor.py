@@ -8,7 +8,6 @@
 from .testcase import DramatiqDBTestCase
 from anyblok.column import Integer, String
 from anyblok.environment import EnvironmentManager
-from anyblok.registry import RegistryManager
 from anyblok_dramatiq import (
     declare_actor_for,
     declare_actor_send_for,

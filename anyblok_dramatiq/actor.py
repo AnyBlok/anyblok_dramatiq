@@ -9,6 +9,7 @@ import dramatiq
 from dramatiq.actor import _queue_name_re, Actor
 from anyblok.common import add_autodocs
 from anyblok.model.plugins import ModelPluginBase
+from anyblok.environment import EnvironmentManager
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -21,6 +22,11 @@ class AnyBlokActorException(ValueError):
 class AnyBlokActor(Actor):
 
     def __call__(self, *args, **kwargs):
+        is_called_by_dramatiq_actor = EnvironmentManager.get(
+            'is_called_by_dramatiq_actor', False)
+        if is_called_by_dramatiq_actor:
+            return self.fn(*args, **kwargs)
+
         return self.fn.registry.Dramatiq.create_message(
             self.fn.actor, *args, **kwargs)
 

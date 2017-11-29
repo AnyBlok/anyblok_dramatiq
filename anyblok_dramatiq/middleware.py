@@ -9,6 +9,7 @@ from logging import getLogger
 from anyblok.config import Configuration
 from anyblok.registry import RegistryManager
 from dramatiq.middleware import Middleware
+from anyblok.environment import EnvironmentManager
 
 logger = getLogger(__name__)
 
@@ -34,6 +35,7 @@ class DramatiqMessageMiddleware(Middleware):
         if m:
             m.update_status(M.STATUS_RUNNING)
             registry.commit()
+            EnvironmentManager.set('is_called_by_dramatiq_actor', True)
 
     def after_process_message(self, broker, message, *,
                               result=None, exception=None):
@@ -42,6 +44,7 @@ class DramatiqMessageMiddleware(Middleware):
                      "with result %r and exception %r",
                      id(registry.session), message.message_id, result,
                      exception)
+        EnvironmentManager.set('is_called_by_dramatiq_actor', False)
         M = registry.Dramatiq.Message
         STATUS_DONE = M.STATUS_DONE
         STATUS_FAILED = M.STATUS_FAILED
