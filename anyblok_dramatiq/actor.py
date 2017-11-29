@@ -27,6 +27,9 @@ class AnyBlokActor(Actor):
         if is_called_by_dramatiq_actor:
             return self.fn(*args, **kwargs)
 
+        return self.send(*args, **kwargs)
+
+    def send(self, *args, **kwargs):
         return self.fn.registry.Dramatiq.create_message(
             self.fn.actor, *args, **kwargs)
 

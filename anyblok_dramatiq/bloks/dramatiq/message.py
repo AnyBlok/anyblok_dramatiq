@@ -96,13 +96,17 @@ class Message(Declarations.Mixin.DramatiqMessageStatus):
     updated_at = DateTime()
     message = Json(nullable=False)
 
-    def __init__(self, *args, **kwargs):
-        super(Message, self).__init__(*args, **kwargs)
-        self.update_status(self.status)
-
     def __str__(self):
         return '<Message (id={self.id}, status={self.status.label})>'.format(
             self=self)
+
+    @classmethod
+    def insert(cls, *args, **kwargs):
+        self = super(Message, cls).insert(*args, **kwargs)
+        self.updated_at = datetime.now()
+        self.registry.Dramatiq.Message.History.insert(
+            status=self.status, created_at=self.updated_at, message=self)
+        return self
 
     @classmethod
     def get_instance_of(cls, message):
