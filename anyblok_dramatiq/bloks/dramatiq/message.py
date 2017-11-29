@@ -6,11 +6,10 @@
 # v. 2.0. If a copy of the MPL was not distributed with this file,You can
 # obtain one at http://mozilla.org/MPL/2.0/.
 from anyblok import Declarations
-from anyblok.column import Integer, UUID, Selection, DateTime, Json
+from anyblok.column import Integer, UUID, Selection, DateTime, Json, Text
 from anyblok.relationship import Many2One
 from datetime import datetime
 from dramatiq import Message as DramatiqMessage, get_broker, Actor
-from sqlalchemy.schema import UniqueConstraint
 from simplejson import loads
 from logging import getLogger
 
@@ -72,6 +71,7 @@ class DramatiqMessageStatus:
     STATUS_RUNNING = "running"
     STATUS_FAILED = "failed"
     STATUS_DONE = "done"
+    STATUS_SKIPED = "skiped"
 
     STATUSES = [
         (STATUS_NEW, "New"),
@@ -80,6 +80,7 @@ class DramatiqMessageStatus:
         (STATUS_RUNNING, "Running"),
         (STATUS_FAILED, "Failed"),
         (STATUS_DONE, "Done"),
+        (STATUS_SKIPED, "Skiped"),
     ]
 
     status = Selection(
@@ -103,11 +104,13 @@ class Message(Declarations.Mixin.DramatiqMessageStatus):
     def get_instance_of(cls, message):
         return cls.query().filter(cls.id == message.message_id).one_or_none()
 
-    def update_status(self, status):
+    def update_status(self, status, error=None):
         self.status = status
         self.updated_at = datetime.now()
         self.registry.Dramatiq.Message.History.insert(
-            status=status, created_at=self.updated_at, message=self)
+            status=status, created_at=self.updated_at, message=self,
+            error=error
+        )
 
 
 @Declarations.register(Declarations.Model.Dramatiq.Message)
@@ -117,7 +120,4 @@ class History(Declarations.Mixin.DramatiqMessageStatus):
     message = Many2One(model=Declarations.Model.Dramatiq.Message,
                        one2many="histories", nullable=False,
                        foreign_key_options={'ondelete': 'cascade'})
-
-    # @classmethod
-    # def define_table_args(cls):
-    #     return (UniqueConstraint(cls.status, cls.dramatiq_message_id),)
+    error = Text()

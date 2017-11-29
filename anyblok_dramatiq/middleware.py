@@ -49,18 +49,30 @@ class DramatiqMessageMiddleware(Middleware):
             m = M.get_instance_of(message)
             if m:
                 m.update_status(
-                    STATUS_FAILED if exception is not None else STATUS_DONE)
+                    STATUS_FAILED if exception is not None else STATUS_DONE,
+                    error=str(exception) if exception else None
+                )
                 registry.commit()
         except Exception as e:
             registry.rollback()
             m = M.get_instance_of(message)
             if m:
-                m.update_status(M.STATUS_FAILED)
+                m.update_status(M.STATUS_FAILED, error=str(e))
                 registry.commit()
 
             raise e
         finally:
             registry.expire_all()
+
+    def after_skip_message(self, broker, message):
+        registry = RegistryManager.get(Configuration.get('db_name'))
+        logger.debug("[after_skip_message] %s: update message(%s) status ",
+                     id(registry.session), message.message_id)
+        registry.rollback()
+        M = registry.Dramatiq.Message
+        m = M.get_instance_of(message)
+        m.update_status(M.STATUS_SKIPED)
+        registry.commit()
 
     def before_consumer_thread_shutdown(self, *args, **kwargs):
         registry = RegistryManager.get(Configuration.get('db_name'))
