@@ -58,19 +58,6 @@ class TestMessage(DramatiqDBTestCase):
         self.assertEqual(message.histories[1].created_at, message.updated_at)
         self.assertEqual(message.histories[1].status, message.status)
 
-    def test_history_unique_constraint(self):
-        registry = self.init_registry(None)
-        registry.upgrade(install=('test_dramatiq_1',))
-        message = registry.Dramatiq.create_message(
-            registry.Task.add, name='test')
-        self.assertEqual(message.kwargs, dict(name='test'))
-        query = registry.Dramatiq.Message.query()
-        query = query.filter_by(id=message.message_id)
-        message = query.one()
-        self.assertEqual(message.status, registry.Dramatiq.Message.STATUS_NEW)
-        with self.assertRaises(Exception):
-            message.update_status(registry.Dramatiq.Message.STATUS_NEW)
-
     def test_message_unique_constraint(self):
         registry = self.init_registry(None)
         registry.upgrade(install=('test_dramatiq_1',))

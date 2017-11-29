@@ -128,6 +128,20 @@ class TestMiddleWare(DramatiqDBTestCase):
         )
         self.broker.emit_after('process_message', MockMessage(message_id))
 
+    def test_after_skip_message_with(self):
+        registry = self.init_registry(None)
+        registry.upgrade(install=('dramatiq',))
+        message_id = uuid4()
+        message = registry.Dramatiq.Message.insert(id=message_id)
+        self.assertEqual(
+            message.status,
+            registry.Dramatiq.Message.STATUS_NEW
+        )
+        self.broker.emit_after('skip_message', MockMessage(message_id))
+        with self.assertRaises(Exception):
+            # waiting rollback, dramatiq_message table doesn't exist
+            registry.Dramatiq.Message.query().count()
+
     def test_before_consumer_thread_shutdown(self):
         registry = self.init_registry(None)
         registry.upgrade(install=('dramatiq',))
@@ -136,9 +150,7 @@ class TestMiddleWare(DramatiqDBTestCase):
 
         self.assertEqual(registry.Dramatiq.Message.query().count(), 1)
         self.broker.emit_before('consumer_thread_shutdown')
-        with self.assertRaises(Exception):
-            # waiting rollback, dramatiq_message table doesn't exist
-            registry.Dramatiq.Message.query().count()
+        self.assertEqual(registry.Dramatiq.Message.query().count(), 1)
 
     def test_before_worker_thread_shutdown(self):
         registry = self.init_registry(None)
@@ -148,18 +160,16 @@ class TestMiddleWare(DramatiqDBTestCase):
 
         self.assertEqual(registry.Dramatiq.Message.query().count(), 1)
         self.broker.emit_before('worker_thread_shutdown')
-        with self.assertRaises(Exception):
-            # waiting rollback, dramatiq_message table doesn't exist
-            registry.Dramatiq.Message.query().count()
+        self.assertEqual(registry.Dramatiq.Message.query().count(), 1)
 
-    def test_before_worker_shutdown(self):
+    def test_after_worker_shutdown(self):
         registry = self.init_registry(None)
         registry.upgrade(install=('dramatiq',))
         message_id = uuid4()
         registry.Dramatiq.Message.insert(id=message_id)
 
         self.assertEqual(registry.Dramatiq.Message.query().count(), 1)
-        self.broker.emit_before('worker_shutdown')
+        self.broker.emit_after('worker_shutdown')
         with self.assertRaises(Exception):
             # waiting rollback, dramatiq_message table doesn't exist
             registry.Dramatiq.Message.query().count()
