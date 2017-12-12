@@ -13,6 +13,7 @@ from datetime import datetime
 from uuid import uuid1
 from anyblok_dramatiq import actor_send
 from time import sleep
+from sqlalchemy.exc import OperationalError
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -78,7 +79,7 @@ class Job:
                 Job.query().with_for_update(nowait=True).filter(
                     Job.uuid == self.uuid).one()
                 break
-            except:
+            except OperationalError:
                 sleep(1)
 
     def call_main_job(self):
