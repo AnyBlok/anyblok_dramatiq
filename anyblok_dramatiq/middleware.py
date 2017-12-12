@@ -30,6 +30,10 @@ class DramatiqMessageMiddleware(Middleware):
         registry = RegistryManager.get(Configuration.get('db_name'))
         logger.debug("[before_process_message] %s: update message(%s) status ",
                      id(registry.session), message.message_id)
+        # cache may have change, then we do the invalidation in the dramatiq
+        # side
+        registry.System.Cache.clear_invalidate_cache()
+
         M = registry.Dramatiq.Message
         m = M.get_instance_of(message)
         if m:

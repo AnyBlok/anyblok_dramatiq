@@ -115,7 +115,7 @@ class StepByStep(Model.Dramatiq.Task):
         Job = self.registry.Dramatiq.Job
         query = Job.query().filter(Job.main_job == job)
         query = query.filter(Job.status == Job.STATUS_WAITING)
-        query = query.join(Job.task).order(self.__class__.order)
+        query = query.join(Job.task).order_by(self.__class__.order)
         if query.count():
             sub_job = query.first()
             # FIXME dramatiq don t accept uuid, waiting the next version
@@ -126,7 +126,7 @@ class StepByStep(Model.Dramatiq.Task):
 
 @Declarations.register(Model.Dramatiq.Task)
 class Parallel(Model.Dramatiq.Task):
-    TASK_TYPE = 'stepbystep'
+    TASK_TYPE = 'parallel'
 
     def run(self, job):
         logger.info('Run the sub_job for job %r' % (self, job))

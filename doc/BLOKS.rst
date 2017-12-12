@@ -23,3 +23,16 @@ Blok dramatiq
 
 .. include:: ../anyblok_dramatiq/bloks/dramatiq/README.rst
 .. include:: ../anyblok_dramatiq/bloks/dramatiq/CODE.rst
+
+Blok dramatiq task
+------------------
+
+.. automodule:: anyblok_dramatiq.bloks.task
+.. autoclass:: DramatiqTaskBlok
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :noindex:
+
+.. include:: ../anyblok_dramatiq/bloks/task/README.rst
+.. include:: ../anyblok_dramatiq/bloks/task/CODE.rst
