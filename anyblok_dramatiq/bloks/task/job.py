@@ -8,9 +8,11 @@
 from anyblok import Declarations
 from anyblok.column import UUID, Selection, DateTime, Json, Text
 from anyblok.relationship import Many2One
+from anyblok.environment import EnvironmentManager
 from datetime import datetime
 from uuid import uuid1
 from anyblok_dramatiq import actor_send
+from time import sleep
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -46,7 +48,8 @@ class Job:
     error = Text()
 
     @actor_send()
-    def run(cls, job_uuid=None, autocommit=True):
+    def run(cls, job_uuid=None):
+        autocommit = EnvironmentManager.get('job_autocommit', True)
         try:
             job = cls.query().filter(cls.uuid == job_uuid).one()
             job.status = cls.STATUS_RUNNING
@@ -54,7 +57,7 @@ class Job:
                 cls.registry.commit()  # use to save the state
 
             job.task.run(job)
-            job.status = cls.STATUS_DONE
+
             if autocommit:
                 cls.registry.commit()  # use to save the state
         except Exception as e:
@@ -66,7 +69,19 @@ class Job:
             if autocommit:
                 cls.registry.commit()  # use to save the state
 
+            raise e
+
+    def lock(self):
+        Job = self.__class__
+        while True:
+            try:
+                Job.query().with_for_update(nowait=True).filter(
+                    Job.uuid == self.uuid).one()
+                break
+            except:
+                sleep(1)
+
     def call_main_job(self):
         if self.main_job:
             self.main_job.lock()
-            self.main_job.run_next()
+            self.main_job.task.run_next(self.main_job)

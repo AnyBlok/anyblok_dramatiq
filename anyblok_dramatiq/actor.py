@@ -25,6 +25,8 @@ class AnyBlokActor(Actor):
         is_called_by_dramatiq_actor = EnvironmentManager.get(
             'is_called_by_dramatiq_actor', False)
         if is_called_by_dramatiq_actor:
+            kwargs.pop('run_at', None)
+            kwargs.pop('delay', None)
             return self.fn(*args, **kwargs)
 
         return self.send(*args, **kwargs)

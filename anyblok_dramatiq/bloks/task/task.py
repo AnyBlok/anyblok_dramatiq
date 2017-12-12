@@ -62,9 +62,10 @@ class Task:
             task=self,
             main_job=main_job
         )
-        job = self.registry.dramatiq.job.insert(**values)
+        job = self.registry.Dramatiq.Job.insert(**values)
         # FIXME dramatiq don t accept uuid, waiting the next version
-        self.registry.Dramatiq.Job.run(job_uuid=str(job.uuid), run_at=run_at)
+        self.registry.Dramatiq.Job.run(
+            job_uuid=str(job.uuid), run_at=run_at)
 
     def run(self, job):
         raise Exception("No task definition for job %r" % job)
@@ -88,9 +89,10 @@ class CallMethod(Model.Dramatiq.Task):
         logger.info('Run the task %r for job %r' % (self, job))
         Model = self.registry.get(self.model)
         method = self.method
-        data_args = self.data.get('with_args', tuple())
-        data_kwargs = self.data.get('with_kwargs', dict())
+        data_args = job.data.get('with_args', tuple())
+        data_kwargs = job.data.get('with_kwargs', dict())
         getattr(Model, method)(job.uuid, *data_args, **data_kwargs)
+        job.status = self.registry.Dramatiq.Job.STATUS_DONE
         job.call_main_job()
 
 
@@ -99,28 +101,29 @@ class StepByStep(Model.Dramatiq.Task):
     TASK_TYPE = 'stepbystep'
 
     def run(self, job):
-        logger.info('Run the sub_job for job %r' % (self, job))
+        logger.info('Run the sub_job for job %r' % job)
         for task in job.task.sub_tasks:
             values = dict(
                 data=job.data,
                 task=task,
-                main_job=job,
-                status=self.register.Dramatiq.Job.STATUS_WAITING
+                main_job=job
             )
-            self.registry.dramatiq.job.insert(**values)
+            self.registry.Dramatiq.Job.insert(**values)
 
+        job.status = self.registry.Dramatiq.Job.STATUS_WAITING
         self.run_next(job)
 
     def run_next(self, job):
         Job = self.registry.Dramatiq.Job
         query = Job.query().filter(Job.main_job == job)
-        query = query.filter(Job.status == Job.STATUS_WAITING)
+        query = query.filter(Job.status == Job.STATUS_NEW)
         query = query.join(Job.task).order_by(self.__class__.order)
         if query.count():
             sub_job = query.first()
             # FIXME dramatiq don t accept uuid, waiting the next version
             self.registry.Dramatiq.Job.run(job_uuid=str(sub_job.uuid))
         else:
+            job.status = self.registry.Dramatiq.Job.STATUS_DONE
             job.call_main_job()
 
 
@@ -129,20 +132,22 @@ class Parallel(Model.Dramatiq.Task):
     TASK_TYPE = 'parallel'
 
     def run(self, job):
-        logger.info('Run the sub_job for job %r' % (self, job))
+        logger.info('Run the sub_job for job %r' % job)
+        job.status = self.registry.Dramatiq.Job.STATUS_WAITING
         for task in job.task.sub_tasks:
             values = dict(
                 data=job.data,
                 task=task,
                 main_job=job,
             )
-            sub_job = self.registry.dramatiq.job.insert(**values)
+            sub_job = self.registry.Dramatiq.Job.insert(**values)
             self.registry.Dramatiq.Job.run(job_uuid=str(sub_job.uuid))
 
     def run_next(self, job):
         # the lock is already done by call_main_job
         Job = self.registry.Dramatiq.Job
         query = Job.query().filter(Job.main_job == job)
-        query = query.filter(Job.status == Job.STATUS_WAITING)
+        query = query.filter(Job.status == Job.STATUS_NEW)
         if not query.count():
+            job.status = self.registry.Dramatiq.Job.STATUS_DONE
             job.call_main_job()
