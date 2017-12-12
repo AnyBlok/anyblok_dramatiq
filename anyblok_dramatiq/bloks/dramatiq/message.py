@@ -30,6 +30,7 @@ class Dramatiq:
         :rtype: dramatiq message instance
         """
         delay = kwargs.pop('delay', None)
+        run_at = kwargs.pop('run_at', None)
         if not isinstance(actor, Actor):
             logger.warning(
                 "[create_message] can't work without an actor"
@@ -47,16 +48,20 @@ class Dramatiq:
             id=message.message_id,
             message=loads(message.encode())
         )
-        cls.postcommit_hook('send2broker', message, delay=delay)
+        cls.postcommit_hook('send2broker', message, delay=delay,
+                            run_at=run_at)
         return message
 
     @classmethod
-    def send2broker(cls, *messages, delay=None):
+    def send2broker(cls, *messages, delay=None, run_at=None):
         """Send all the messages with the delay
 
         :param _*messages: message instance list
         :param delay: delay before send
         """
+        if delay is None and run_at:
+            delay = (run_at - datetime.now()).seconds * 1000
+
         for message in messages:
             broker = message.broker or get_broker()
             broker.enqueue(message, delay=delay)

@@ -61,7 +61,8 @@ setup(
             'anyblok_dramatiq=anyblok_dramatiq.scripts:anyblok_dramatiq',
         ],
         'bloks': [
-            'dramatiq=anyblok_dramatiq.bloks.dramatiq:DramatiqBlok'
+            'dramatiq=anyblok_dramatiq.bloks.dramatiq:DramatiqBlok',
+            'dramatiq-task=anyblok_dramatiq.bloks.task:DramatiqTaskBlok',
         ],
         'anyblok.init': [
             'dramatiq_config=anyblok_dramatiq:anyblok_init_config',
