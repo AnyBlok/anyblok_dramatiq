@@ -20,8 +20,14 @@ class AnyBlokActorException(ValueError):
 
 
 class AnyBlokActor(Actor):
+    """Overload the dramatiq.actor.Actor class
 
+    the goal is to allowthe decorator actor_send, this decorator
+    use directly the method send
+
+    """
     def __call__(self, *args, **kwargs):
+        """Send to the broker or call directly the classmethod"""
         is_called_by_dramatiq_actor = EnvironmentManager.get(
             'is_called_by_dramatiq_actor', False)
         if is_called_by_dramatiq_actor:
@@ -32,6 +38,7 @@ class AnyBlokActor(Actor):
         return self.send(*args, **kwargs)
 
     def send(self, *args, **kwargs):
+        """Send to the broker"""
         return self.fn.registry.Dramatiq.create_message(
             self.fn.actor, *args, **kwargs)
 
@@ -90,14 +97,32 @@ def _declare_actor_for(ActorCls, method, queue_name="default", priority=0,
 
 
 def declare_actor_for(method, **kwargs):
+    """Method to add anyblok_dramatiq.actor.actor decorator on the
+    class method
+
+    :param method: classmethod pointer
+    :param _**kwargs: decorator kwargs
+    """
     _declare_actor_for(Actor, method, **kwargs)
 
 
 def declare_actor_send_for(method, **kwargs):
+    """Method to add anyblok_dramatiq.actor.actor_send decorator on the
+    class method
+
+    :param method: classmethod pointer
+    :param _**kwargs: decorator kwargs
+    """
     _declare_actor_for(AnyBlokActor, method, **kwargs)
 
 
 def actor(queue_name="default", priority=0, **options):
+    """Decorator to get an Actor
+
+    :param queue_name: name of the queue
+    :param priority: priority of the actor
+    :param _**options: options for actor
+    """
     kwargs = {'queue_name': queue_name, 'priority': priority}
     kwargs.update(options)
     autodoc = """
@@ -114,6 +139,12 @@ def actor(queue_name="default", priority=0, **options):
 
 
 def actor_send(queue_name="default", priority=0, **options):
+    """Decorator to get an AnyBlokActor
+
+    :param queue_name: name of the queue
+    :param priority: priority of the actor
+    :param _**options: options for actor
+    """
     kwargs = {'queue_name': queue_name, 'priority': priority}
     kwargs.update(options)
     autodoc = """
@@ -130,6 +161,9 @@ def actor_send(queue_name="default", priority=0, **options):
 
 
 class ActorPlugin(ModelPluginBase):
+    """``anyblok.model.plugin`` to allow the build of the
+    ``anyblok_dramatiq.actor``
+    """
 
     def initialisation_tranformation_properties(self, properties,
                                                 transformation_properties):
@@ -194,6 +228,9 @@ class ActorPlugin(ModelPluginBase):
 
 
 class ActorSendPlugin(ModelPluginBase):
+    """``anyblok.model.plugin`` to allow the build of the
+    ``anyblok_dramatiq.actor_send``
+    """
 
     def initialisation_tranformation_properties(self, properties,
                                                 transformation_properties):

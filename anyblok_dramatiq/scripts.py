@@ -22,6 +22,8 @@ logger = getLogger(__name__)
 
 
 def worker_process(worker_id, logging_fd):
+    """consume worker to process messages and execute the actor"""
+    # TODO preload registries
     db_name = Configuration.get('db_name')
     try:
         logging_pipe = os.fdopen(logging_fd, "w")
@@ -68,7 +70,8 @@ def worker_process(worker_id, logging_fd):
 
 
 def dramatiq(application, configuration_groups, **kwargs):
-    """ Create a database and install blok from config
+    """Run dramatiq workers process to consume en execute
+    actors
 
     :param application: name of the application
     :param configuration_groups: list configuration groupe to load

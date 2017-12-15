@@ -15,8 +15,22 @@ logger = getLogger(__name__)
 
 
 class DramatiqMessageMiddleware(Middleware):
+    """Middleware for dramatiq, the goal is to detect if the the call
+    was done by anyblok tools with the ``Model.Dramatiq.Message``. This
+    model stock the status of the message and the history of the status's
+    change
+    """
 
     def before_enqueue(self, broker, message, delay):
+        """Called when a message is delayed or enqueued
+
+        If the message is in the ``Model.Dramatiq.Message`` then
+        the status will be change to **delayed** or **enqueued**
+
+        :param broker: the broker used
+        :param message: the message send in the broker
+        :param delay: delay in milliseconds
+        """
         registry = RegistryManager.get(Configuration.get('db_name'))
         logger.debug("[before_enqueue] %s: update message(%s) status ",
                      id(registry.session), message.message_id)
@@ -27,6 +41,17 @@ class DramatiqMessageMiddleware(Middleware):
             registry.commit()
 
     def before_process_message(self, broker, message):
+        """Called before process message
+
+        Invalid the cache, this is mean that if a cache have to be invalidated
+        then it will be invalidated else nothing is done
+
+        If the message is in the ``Model.Dramatiq.Message`` then
+        the status will be change to **running**
+
+        :param broker: the broker used
+        :param message: the message send in the broker
+        """
         registry = RegistryManager.get(Configuration.get('db_name'))
         logger.debug("[before_process_message] %s: update message(%s) status ",
                      id(registry.session), message.message_id)
@@ -43,6 +68,24 @@ class DramatiqMessageMiddleware(Middleware):
 
     def after_process_message(self, broker, message, *,
                               result=None, exception=None):
+        """Called after process message
+
+        If the message is in the ``Model.Dramatiq.Message`` then
+        the status will be change to **done** or **failed**.
+
+        .. note::
+
+            the status is failed if an exception is passed or a rollback
+            is need
+
+        Before the end, the session is expired to release the Session pool
+        thread
+
+        :param broker: the broker used
+        :param message: the message send in the broker
+        :param result: return by the process
+        :param exception: any ``Exception`` raised by the process
+        """
         registry = RegistryManager.get(Configuration.get('db_name'))
         logger.debug("[after_process_message] %s: update message(%s) status "
                      "with result %r and exception %r",
@@ -72,6 +115,17 @@ class DramatiqMessageMiddleware(Middleware):
             registry.expire_all()
 
     def after_skip_message(self, broker, message):
+        """Called after skip message
+
+        If the message is in the ``Model.Dramatiq.Message`` then
+        the status will be change to **skip**
+
+        Before the end, the session is expired to release the Session pool
+        thread
+
+        :param broker: the broker used
+        :param message: the message send in the broker
+        """
         registry = RegistryManager.get(Configuration.get('db_name'))
         logger.debug("[after_skip_message] %s: update message(%s) status ",
                      id(registry.session), message.message_id)
@@ -82,18 +136,33 @@ class DramatiqMessageMiddleware(Middleware):
         registry.commit()
 
     def before_consumer_thread_shutdown(self, *args, **kwargs):
+        """Called before consumer thread shutdown
+
+        remove the session instance to clean the Session pool
+
+        """
         registry = RegistryManager.get(Configuration.get('db_name'))
         logger.debug("[before_consumer_thread_shutdown] %s: %r %r",
                      id(registry.session), args, kwargs)
         registry.Session.remove()
 
     def before_worker_thread_shutdown(self, *args, **kwargs):
+        """Called before worker thread shutdown
+
+        remove the session instance to clean the Session pool
+
+        """
         registry = RegistryManager.get(Configuration.get('db_name'))
         logger.debug("[before_worker_thread_shutdown] %s: %r %r",
                      id(registry.session), args, kwargs)
         registry.Session.remove()
 
     def after_worker_shutdown(self, *args, **kwargs):
+        """Called before worker shutdown
+
+        Close the AnyBlok registry
+
+        """
         registry = RegistryManager.get(Configuration.get('db_name'))
         logger.debug("[after_worker_shutdown] %s: %r %r",
                      id(registry.session), args, kwargs)

@@ -15,8 +15,10 @@ logger = getLogger(__name__)
 
 
 def prepare_broker(withmiddleware=True):
+    """Configure the broker for send and workers"""
     broker_cls = Configuration.get('dramatiq_broker', RabbitmqBroker)
     middleware = []
+    # FIXME use entry point not configuration
     if withmiddleware:
         middleware = Configuration.get('dramatiq_middlewares', [])
         middleware.append(DramatiqMessageMiddleware)

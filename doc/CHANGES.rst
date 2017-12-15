@@ -10,3 +10,12 @@
 
 CHANGELOG
 =========
+
+1.0.0
+-----
+
+* [IMP] dramatiq console script to execute workers process
+* [IMP] actor and actor_send decorator to define dramatiq actor
+* [IMP] dramatiq middleware to modify ``Model.Dramatiq.Message`` status
+* [IMP] dramatiq blok to historize the message and status
+* [IMP] dramatiq-task to add a back task with dramatiq
