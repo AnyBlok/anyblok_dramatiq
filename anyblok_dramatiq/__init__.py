@@ -11,7 +11,8 @@ from .actor import ( # noqa
     actor,
     actor_send,
     AnyBlokActor,
-    AnyBlokActorException
+    AnyBlokActorException,
+    call_directly_the_actor_send
 )
 from .broker import prepare_broker
 

@@ -39,6 +39,9 @@ Code
 .. autofunction:: actor_send
     :noindex:
 
+.. autofunction:: call_directly_the_actor_send
+    :noindex:
+
 .. autoclass:: ActorPlugin
     :members:
     :noindex:

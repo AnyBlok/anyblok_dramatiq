@@ -10,6 +10,7 @@ from dramatiq.actor import _queue_name_re, Actor
 from anyblok.common import add_autodocs
 from anyblok.model.plugins import ModelPluginBase
 from anyblok.environment import EnvironmentManager
+from contextlib import contextmanager
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -158,6 +159,16 @@ def actor_send(queue_name="default", priority=0, **options):
         return classmethod(method)
 
     return wrapper
+
+
+@contextmanager
+def call_directly_the_actor_send():
+    """Context manager to call directly without use dramatiq"""
+    try:
+        EnvironmentManager.set('is_called_by_dramatiq_actor', True)
+        yield
+    finally:
+        EnvironmentManager.set('is_called_by_dramatiq_actor', False)
 
 
 class ActorPlugin(ModelPluginBase):
