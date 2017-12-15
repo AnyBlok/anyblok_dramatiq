@@ -49,7 +49,7 @@ setup(
     long_description=readme + '\n' + FRONT + '\n' + CHANGES,
     author="jssuzanne",
     author_email='jssuzanne@anybox.fr',
-    url='https://github.com/jssuzanne/dramatiq',
+    url="http://docs.anyblok_dramatiq.anyblok.org/%s" % version,
     packages=find_packages(),
     entry_points={
         'console_scripts': [
