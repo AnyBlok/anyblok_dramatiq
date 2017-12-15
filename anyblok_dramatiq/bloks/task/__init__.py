@@ -10,7 +10,7 @@ from anyblok_dramatiq.release import version
 
 
 class DramatiqTaskBlok(Blok):
-    """Dramatiq's Blok class definition
+    """Dramatiq's task definition
     """
     version = version
     author = "jssuzanne"

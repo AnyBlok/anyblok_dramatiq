@@ -97,7 +97,7 @@ class TestTask(DramatiqDBTestCase):
         self.assertEqual(sub_job1.status, Job.STATUS_DONE)
         self.assertEqual(sub_job2.status, Job.STATUS_DONE)
 
-    def test_parallel(self):
+    def test_step_by_step_without_sub_job(self):
         EnvironmentManager.set('is_called_by_dramatiq_actor', True)
         Job = self.registry.Dramatiq.Job
         Task = self.registry.Dramatiq.Task
@@ -105,8 +105,20 @@ class TestTask(DramatiqDBTestCase):
         task = Task.query().filter(Task.label == 'task3').one()
         self.assertFalse(Q.count())
         task.do_the_job(with_args=('test 2',))
-        self.assertEqual(Q.count(), 3)
+        self.assertEqual(Q.count(), 1)
         main_job = Q.filter(Task.label == 'task3').one()
+        self.assertEqual(main_job.status, Job.STATUS_DONE)
+
+    def test_parallel(self):
+        EnvironmentManager.set('is_called_by_dramatiq_actor', True)
+        Job = self.registry.Dramatiq.Job
+        Task = self.registry.Dramatiq.Task
+        Q = Job.query().join(Job.task)
+        task = Task.query().filter(Task.label == 'task4').one()
+        self.assertFalse(Q.count())
+        task.do_the_job(with_args=('test 2',))
+        self.assertEqual(Q.count(), 3)
+        main_job = Q.filter(Task.label == 'task4').one()
         sub_job1 = Q.filter(Task.label == 'subtask1').one()
         sub_job2 = Q.filter(Task.label == 'subtask2').one()
         self.assertEqual(main_job.status, Job.STATUS_DONE)
@@ -120,12 +132,12 @@ class TestTask(DramatiqDBTestCase):
         Message = self.registry.Dramatiq.Message
         Q = Job.query().join(Job.task)
         Qm = Message.query()
-        task = Task.query().filter(Task.label == 'task3').one()
+        task = Task.query().filter(Task.label == 'task4').one()
         self.assertFalse(Q.count())
         task.do_the_job(with_args=('test 2',))
         self.assertEqual(Q.count(), 1)
         self.assertEqual(Qm.count(), 1)
-        main_job = Q.filter(Task.label == 'task3').one()
+        main_job = Q.filter(Task.label == 'task4').one()
         self.assertEqual(main_job.status, Job.STATUS_NEW)
         main_job.task.run(main_job)
         self.assertEqual(Q.count(), 3)
@@ -143,3 +155,15 @@ class TestTask(DramatiqDBTestCase):
         self.assertEqual(main_job.status, Job.STATUS_DONE)
         self.assertEqual(sub_job1.status, Job.STATUS_DONE)
         self.assertEqual(sub_job2.status, Job.STATUS_DONE)
+
+    def test_parallel_without_sub_task(self):
+        EnvironmentManager.set('is_called_by_dramatiq_actor', True)
+        Job = self.registry.Dramatiq.Job
+        Task = self.registry.Dramatiq.Task
+        Q = Job.query().join(Job.task)
+        task = Task.query().filter(Task.label == 'task5').one()
+        self.assertFalse(Q.count())
+        task.do_the_job(with_args=('test 2',))
+        self.assertEqual(Q.count(), 1)
+        main_job = Q.filter(Task.label == 'task5').one()
+        self.assertEqual(main_job.status, Job.STATUS_DONE)

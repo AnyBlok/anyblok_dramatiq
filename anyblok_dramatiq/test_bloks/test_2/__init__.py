@@ -26,7 +26,9 @@ class TestBlok2(Blok):
     def update(self, latest_version):
         self.add_case_simple()
         self.add_case_by_step()
+        self.add_case_by_step_without_sub_job()
         self.add_case_parallel()
+        self.add_case_parallel_without_sub_job()
 
     def add_case_simple(self):
         self.registry.Dramatiq.Task.CallMethod.insert(
@@ -43,12 +45,20 @@ class TestBlok2(Blok):
             label="subtask2", model="Model.Test",
             method="add_instance", main_task=main_task)
 
+    def add_case_by_step_without_sub_job(self):
+        self.registry.Dramatiq.Task.StepByStep.insert(
+            label="task3")
+
     def add_case_parallel(self):
         main_task = self.registry.Dramatiq.Task.Parallel.insert(
-            label="task3")
+            label="task4")
         self.registry.Dramatiq.Task.CallMethod.insert(
             label="subtask1", model="Model.Test",
             method="add_instance", main_task=main_task)
         self.registry.Dramatiq.Task.CallMethod.insert(
             label="subtask2", model="Model.Test",
             method="add_instance", main_task=main_task)
+
+    def add_case_parallel_without_sub_job(self):
+        self.registry.Dramatiq.Task.Parallel.insert(
+            label="task5")

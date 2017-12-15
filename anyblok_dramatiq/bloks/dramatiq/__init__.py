@@ -36,13 +36,17 @@ class DramatiqBlok(Blok):
 
         ::
 
-            from anyblok_dramatiq import declare_actor_for
-
-            declare_actor_for(Model, 'methode name')
-
+            from anyblok_dramatiq import (
+                declare_actor_for,
+                declare_actor_send_for,
+            )
+            declare_actor_for(Model.methode_name)
+            # or
+            declare_actor_send_for(Model.methode_name)
         """
 
     def load(self):
+        """Load all the actor defined in all the installed bloks"""
         Blok = self.registry.System.Blok
         for blok in Blok.list_by_state('installed'):
             b = BlokManager.get(blok)

@@ -58,6 +58,7 @@ class Dramatiq:
 
         :param _*messages: message instance list
         :param delay: delay before send
+        :param run_at: datetime when the process must be executed
         """
         if delay is None and run_at:
             delay = (run_at - datetime.now()).seconds * 1000
@@ -69,6 +70,7 @@ class Dramatiq:
 
 @Declarations.register(Declarations.Mixin)
 class DramatiqMessageStatus:
+    """Mixin to define status field for dramatiq message and history"""
 
     STATUS_NEW = "new"
     STATUS_ENQUEUED = "enqueued"
@@ -96,6 +98,7 @@ class DramatiqMessageStatus:
 
 @Declarations.register(Declarations.Model.Dramatiq)
 class Message(Declarations.Mixin.DramatiqMessageStatus):
+    """Message model for dramatiq"""
 
     id = UUID(primary_key=True, nullable=False)
     updated_at = DateTime()
@@ -107,6 +110,7 @@ class Message(Declarations.Mixin.DramatiqMessageStatus):
 
     @classmethod
     def insert(cls, *args, **kwargs):
+        """Over write the insert to add the first history line"""
         self = super(Message, cls).insert(*args, **kwargs)
         self.updated_at = datetime.now()
         self.registry.Dramatiq.Message.History.insert(
@@ -115,9 +119,11 @@ class Message(Declarations.Mixin.DramatiqMessageStatus):
 
     @classmethod
     def get_instance_of(cls, message):
+        """Called by the middleware to get the model instance of the message"""
         return cls.query().filter(cls.id == message.message_id).one_or_none()
 
     def update_status(self, status, error=None):
+        """Called by the middleware to change the status and history"""
         logger.info("Update message %s status => %s",
                     self, dict(self.STATUSES).get(status))
         self.status = status
@@ -130,6 +136,7 @@ class Message(Declarations.Mixin.DramatiqMessageStatus):
 
 @Declarations.register(Declarations.Model.Dramatiq.Message)
 class History(Declarations.Mixin.DramatiqMessageStatus):
+    """History of the state change for the message"""
 
     id = Integer(primary_key=True)
     message = Many2One(model=Declarations.Model.Dramatiq.Message,

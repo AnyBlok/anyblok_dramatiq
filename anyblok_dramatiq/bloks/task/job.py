@@ -21,6 +21,7 @@ logger = getLogger(__name__)
 
 @Declarations.register(Declarations.Model.Dramatiq)
 class Job:
+    """The job is an execution of an instance of task"""
     STATUS_NEW = "new"
     STATUS_WAITING = "waiting"
     STATUS_RUNNING = "running"
@@ -50,6 +51,7 @@ class Job:
 
     @actor_send()
     def run(cls, job_uuid=None):
+        """dramatiq actor to execute a specific task"""
         autocommit = EnvironmentManager.get('job_autocommit', True)
         try:
             job = cls.query().filter(cls.uuid == job_uuid).one()
@@ -73,6 +75,7 @@ class Job:
             raise e
 
     def lock(self):
+        """lock the job to be sure that only one thread execute the run_next"""
         Job = self.__class__
         while True:
             try:
@@ -83,6 +86,7 @@ class Job:
                 sleep(1)
 
     def call_main_job(self):
+        """Call the main job if exist to do the next action of the main job"""
         if self.main_job:
             self.main_job.lock()
             self.main_job.task.run_next(self.main_job)
