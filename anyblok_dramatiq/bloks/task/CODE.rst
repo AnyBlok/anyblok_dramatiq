@@ -10,6 +10,7 @@ API doc
 ~~~~~~~
 
 **Task**
+````````
 
 .. automodule:: anyblok_dramatiq.bloks.task.task
 
@@ -19,6 +20,7 @@ API doc
     :noindex:
 
 **Job**
+```````
 
 .. automodule:: anyblok_dramatiq.bloks.task.job
 

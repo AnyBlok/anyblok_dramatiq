@@ -10,6 +10,7 @@ API doc
 ~~~~~~~
 
 **Message**
+```````````
 
 .. automodule:: anyblok_dramatiq.bloks.dramatiq.message
 
