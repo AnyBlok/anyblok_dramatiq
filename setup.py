@@ -73,6 +73,9 @@ setup(
             'dramatic_actor=anyblok_dramatiq.actor:ActorPlugin',
             'dramatic_actor_send=anyblok_dramatiq.actor:ActorSendPlugin',
         ],
+        'anyblok_dramatiq.middleware': [
+            'message=anyblok_dramatiq.middleware:DramatiqMessageMiddleware',
+        ],
     },
     include_package_data=True,
     install_requires=requirements,

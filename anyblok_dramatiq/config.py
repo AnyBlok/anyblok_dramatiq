@@ -47,8 +47,6 @@ def define_dramatiq_consumer(group):
     group.add_argument('--dramatiq-threads', type=int,
                        default=os.environ.get('ANYBLOK_DRAMATIQ_THREADS', 4),
                        help="Number of thread by process")
-    group.add_argument('--dramatiq-midlewares', type=AnyBlokPlugin, nargs="+",
-                       help='List of the midlewares allow to be load')
 
 
 @Configuration.add('dramatiq-broker', label="Dramatiq - broker options",

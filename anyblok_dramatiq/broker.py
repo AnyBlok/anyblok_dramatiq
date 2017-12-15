@@ -8,7 +8,7 @@
 from dramatiq import set_broker
 from dramatiq.brokers.rabbitmq import RabbitmqBroker
 from anyblok.config import Configuration
-from .middleware import DramatiqMessageMiddleware
+from pkg_resources import iter_entry_points
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -18,11 +18,10 @@ def prepare_broker(withmiddleware=True):
     """Configure the broker for send and workers"""
     broker_cls = Configuration.get('dramatiq_broker', RabbitmqBroker)
     middleware = []
-    # FIXME use entry point not configuration
     if withmiddleware:
-        middleware = Configuration.get('dramatiq_middlewares', [])
-        middleware.append(DramatiqMessageMiddleware)
-        middleware = [x() for x in middleware]
+        for i in iter_entry_points('anyblok_dramatiq.middleware'):
+            logger.info('Add middleware for AnyBlok/Dramatiq: %r' % i)
+            middleware.append(i.load()())
 
     options = {
         "url": Configuration.get('dramatiq_broker_url'),
