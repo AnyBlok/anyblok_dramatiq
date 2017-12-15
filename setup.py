@@ -28,11 +28,6 @@ with open(
 ) as front:
     FRONT = front.read()
 
-with open(
-    os.path.join(here, 'doc', 'MEMENTO.rst'), 'r', encoding='utf-8'
-) as memento:
-    MEMENTO = memento.read()
-
 anyblok_init = [
 ]
 
@@ -51,7 +46,7 @@ setup(
     name='anyblok_dramatiq',
     version=version,
     description="test simple usecase between anyblok and dramatiq",
-    long_description=readme + '\n' + MEMENTO + '\n' + FRONT + '\n' + CHANGES,
+    long_description=readme + '\n' + FRONT + '\n' + CHANGES,
     author="jssuzanne",
     author_email='jssuzanne@anybox.fr',
     url='https://github.com/jssuzanne/dramatiq',
