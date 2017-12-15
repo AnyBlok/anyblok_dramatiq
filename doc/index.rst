@@ -20,6 +20,7 @@ Welcome to AnyBlok / Dramatiq's documentation!
 
 
    FRONT.rst
+   MEMENTO.rst
    CODE.rst
    BLOKS.rst
    CHANGES.rst
