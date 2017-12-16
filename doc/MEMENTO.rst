@@ -35,3 +35,20 @@ Read the doc of the doc of ``dramatiq`` blok to know how declare it.
 
 Add middleware on dramatiq
 --------------------------
+
+**dramatiq** allow to add middleware to improve the process, **anyblok_dramatiq** add one middleware for historize the messages and their status.
+
+You can add in your project an existing **dramatiq** middleware or your own. `read more <https://dramatiq.io/reference.html#middleware>`_ to known existing middleware or how create your own.
+
+**anyblok_dramatiq** add this own console script to run the workers, you need add the middleware in the entrypoint ``anyblok_dramatiq.middleware``::
+
+    setup(
+        ...
+        entry_points={
+            'anyblok_dramatiq.middleware': [
+                'mymiddleware=module.path:ClassName',
+            ],
+        },
+        ...
+    )
+
