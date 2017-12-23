@@ -11,8 +11,8 @@
 CHANGELOG
 =========
 
-1.0.0
------
+1.0.0 (2017-12-23)
+------------------
 
 * [IMP] dramatiq console script to execute workers process
 * [IMP] actor and actor_send decorator to define dramatiq actor
