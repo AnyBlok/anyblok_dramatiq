@@ -62,6 +62,6 @@ class TestMessage(DramatiqDBTestCase):
         registry = self.init_registry(None)
         registry.upgrade(install=('test_dramatiq_1',))
         uuid = uuid4()
-        registry.Dramatiq.Message.insert(id=uuid)
+        registry.Dramatiq.Message.insert(id=uuid, message={})
         with self.assertRaises(Exception):
             registry.Dramatiq.Message.insert(id=uuid)

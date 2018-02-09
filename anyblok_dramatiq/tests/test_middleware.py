@@ -21,7 +21,7 @@ class TestMiddleWare(DramatiqDBTestCase):
         registry = self.init_registry(None)
         registry.upgrade(install=('dramatiq',))
         message_id = uuid4()
-        message = registry.Dramatiq.Message.insert(id=message_id)
+        message = registry.Dramatiq.Message.insert(id=message_id, message={})
         self.assertEqual(
             message.status,
             registry.Dramatiq.Message.STATUS_NEW
@@ -40,7 +40,7 @@ class TestMiddleWare(DramatiqDBTestCase):
         registry = self.init_registry(None)
         registry.upgrade(install=('dramatiq',))
         message_id = uuid4()
-        message = registry.Dramatiq.Message.insert(id=message_id)
+        message = registry.Dramatiq.Message.insert(id=message_id, message={})
         self.assertEqual(
             message.status,
             registry.Dramatiq.Message.STATUS_NEW
@@ -59,7 +59,7 @@ class TestMiddleWare(DramatiqDBTestCase):
         registry = self.init_registry(None)
         registry.upgrade(install=('dramatiq',))
         message_id = uuid4()
-        message = registry.Dramatiq.Message.insert(id=message_id)
+        message = registry.Dramatiq.Message.insert(id=message_id, message={})
         self.assertEqual(
             message.status,
             registry.Dramatiq.Message.STATUS_NEW
@@ -78,7 +78,7 @@ class TestMiddleWare(DramatiqDBTestCase):
         registry = self.init_registry(None)
         registry.upgrade(install=('dramatiq',))
         message_id = uuid4()
-        message = registry.Dramatiq.Message.insert(id=message_id)
+        message = registry.Dramatiq.Message.insert(id=message_id, message={})
         self.assertEqual(
             message.status,
             registry.Dramatiq.Message.STATUS_NEW
@@ -97,7 +97,8 @@ class TestMiddleWare(DramatiqDBTestCase):
         registry = self.init_registry(None)
         registry.upgrade(install=('dramatiq',))
         message_id = uuid4()
-        message = registry.Dramatiq.Message.insert(id=message_id)
+        message = registry.Dramatiq.Message.insert(
+            id=message_id, message={})
         self.assertEqual(
             message.status,
             registry.Dramatiq.Message.STATUS_NEW
@@ -117,7 +118,7 @@ class TestMiddleWare(DramatiqDBTestCase):
         registry = self.init_registry(None)
         registry.upgrade(install=('dramatiq',))
         message_id = uuid4()
-        message = registry.Dramatiq.Message.insert(id=message_id)
+        message = registry.Dramatiq.Message.insert(id=message_id, message={})
         with self.assertRaises(Exception):
             # no query is available
             registry.Dramatiq.Message.insert(id=message_id)
@@ -132,7 +133,7 @@ class TestMiddleWare(DramatiqDBTestCase):
         registry = self.init_registry(None)
         registry.upgrade(install=('dramatiq',))
         message_id = uuid4()
-        message = registry.Dramatiq.Message.insert(id=message_id)
+        message = registry.Dramatiq.Message.insert(id=message_id, message={})
         self.assertEqual(
             message.status,
             registry.Dramatiq.Message.STATUS_NEW
@@ -146,7 +147,7 @@ class TestMiddleWare(DramatiqDBTestCase):
         registry = self.init_registry(None)
         registry.upgrade(install=('dramatiq',))
         message_id = uuid4()
-        registry.Dramatiq.Message.insert(id=message_id)
+        registry.Dramatiq.Message.insert(id=message_id, message={})
 
         self.assertEqual(registry.Dramatiq.Message.query().count(), 1)
         self.broker.emit_before('consumer_thread_shutdown')
@@ -156,7 +157,7 @@ class TestMiddleWare(DramatiqDBTestCase):
         registry = self.init_registry(None)
         registry.upgrade(install=('dramatiq',))
         message_id = uuid4()
-        registry.Dramatiq.Message.insert(id=message_id)
+        registry.Dramatiq.Message.insert(id=message_id, message={})
 
         self.assertEqual(registry.Dramatiq.Message.query().count(), 1)
         self.broker.emit_before('worker_thread_shutdown')
@@ -166,7 +167,7 @@ class TestMiddleWare(DramatiqDBTestCase):
         registry = self.init_registry(None)
         registry.upgrade(install=('dramatiq',))
         message_id = uuid4()
-        registry.Dramatiq.Message.insert(id=message_id)
+        registry.Dramatiq.Message.insert(id=message_id, message={})
 
         self.assertEqual(registry.Dramatiq.Message.query().count(), 1)
         self.broker.emit_after('worker_shutdown')
