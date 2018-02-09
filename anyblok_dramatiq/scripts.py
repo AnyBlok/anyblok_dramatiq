@@ -30,7 +30,7 @@ def worker_process(worker_id, logging_fd):
         broker = prepare_broker(withmiddleware=True)
         broker.emit_after("process_boot")
         BlokManager.load()
-        registry = RegistryManager.get(db_name)
+        registry = RegistryManager.get(db_name, loadwithoutmigration=True)
         if registry is None:
             logger.critical("No registry found for %s", db_name)
             return os._exit(4)
@@ -38,6 +38,7 @@ def worker_process(worker_id, logging_fd):
         worker = Worker(
             broker, worker_threads=Configuration.get('dramatiq_threads', 1))
         worker.start()
+        print('worker started')
     except ImportError as e:
         logger.critical(e)
         return os._exit(2)
