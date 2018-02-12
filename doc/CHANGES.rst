@@ -12,8 +12,8 @@
 CHANGELOG
 =========
 
-1.0.2
------
+1.0.2 (2018-02-12)
+------------------
 
 * [FIX] multi process lock
   AnyBlok seem lock the data base during the migration, the dramatiq process
