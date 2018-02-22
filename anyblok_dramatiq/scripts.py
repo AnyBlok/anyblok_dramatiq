@@ -10,15 +10,21 @@ from anyblok.blok import BlokManager
 from anyblok.config import Configuration
 from anyblok.registry import RegistryManager
 from anyblok import load_init_function_from_entry_points
-from anyblok.scripts import format_configuration
 from dramatiq import Worker
 from .broker import prepare_broker
 import signal
 import time
 from logging import getLogger
-import sys
+from .release import version
 
 logger = getLogger(__name__)
+
+
+Configuration.add_application_properties(
+    'dramatiq', ['dramatiq-broker', 'dramatiq-consumer', 'logging'],
+    prog='Dramatiq app for AnyBlok, version %r' % version,
+    description='Distributed actor for AnyBlok'
+)
 
 
 def worker_process(worker_id, logging_fd):
@@ -70,7 +76,7 @@ def worker_process(worker_id, logging_fd):
     logging_pipe.close()
 
 
-def dramatiq(application, configuration_groups, **kwargs):
+def anyblok_dramatiq():
     """Run dramatiq workers process to consume en execute
     actors
 
@@ -78,11 +84,8 @@ def dramatiq(application, configuration_groups, **kwargs):
     :param configuration_groups: list configuration groupe to load
     :param \**kwargs: ArgumentParser named arguments
     """
-    format_configuration(configuration_groups,
-                         'dramatiq-broker', 'dramatiq-consumer')
     load_init_function_from_entry_points()
-    Configuration.load(application, configuration_groups=configuration_groups,
-                       **kwargs)
+    Configuration.load('dramatiq')
 
     worker_pipes = []
     worker_processes = []
@@ -127,7 +130,3 @@ def dramatiq(application, configuration_groups, **kwargs):
         pipe.close()
 
     return retcode
-
-
-def anyblok_dramatiq():
-    sys.exit(dramatiq('dramatiq', ['logging']))

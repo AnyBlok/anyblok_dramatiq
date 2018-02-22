@@ -7,36 +7,18 @@
 # v. 2.0. If a copy of the MPL was not distributed with this file,You can
 # obtain one at http://mozilla.org/MPL/2.0/.
 from anyblok.config import Configuration, AnyBlokPlugin
-from .release import version
 import os
 
 
-Configuration.applications.update({
-    'dramatiq': {
-        'prog': 'Dramatiq app for AnyBlok, version %r' % version,
-        'description': 'Distributed actor for AnyBlok',
-        'configuration_groups': [
-            'dramatiq-broker',
-            'dramatiq-consumer',
-            'config', 'database',
-        ],
-    },
-})
+Configuration.add_application_properties('createdb', ['dramatiq-broker'])
+Configuration.add_application_properties('updatedb', ['dramatiq-broker'])
+Configuration.add_application_properties('nose', ['dramatiq-broker'])
+Configuration.add_application_properties('interpreter', ['dramatiq-broker'])
+Configuration.add_application_properties('default', ['dramatiq-broker'])
 
-
-Configuration.add_configuration_groups('createdb', ['dramatiq-broker'])
-Configuration.add_configuration_groups('updatedb', ['dramatiq-broker'])
-Configuration.add_configuration_groups('nose', ['dramatiq-broker'])
-Configuration.add_configuration_groups('interpreter', ['dramatiq-broker'])
-Configuration.add_configuration_groups('default', ['dramatiq-broker'])
-
-try:
-    # import the configuration to get application
-    import anyblok_pyramid.config  # noqa
-    Configuration.add_configuration_groups('pyramid', ['dramatiq-broker'])
-    Configuration.add_configuration_groups('gunicorn', ['dramatiq-broker'])
-except ImportError:
-    pass
+Configuration.add_application_properties('pyramid', ['dramatiq-broker'])
+Configuration.add_application_properties('gunicorn', ['dramatiq-broker'],
+                                         add_default_group=False)
 
 
 @Configuration.add('dramatiq-consumer', label="Dramatiq - consumer options",
