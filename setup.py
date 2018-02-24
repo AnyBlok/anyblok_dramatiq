@@ -10,7 +10,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '1.0.2'
+version = '1.0.3'
 
 
 here = os.path.abspath(os.path.dirname(__file__))
