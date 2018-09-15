@@ -27,7 +27,7 @@
 AnyBlok / Dramatiq
 ==================
 
-Improve AnyBlok `AnyBlok <http://doc.anyblok.org>`_ to add distributed actor (agent)
+Improve `AnyBlok <http://doc.anyblok.org>`_ to add distributed actor (agent)
 with `dramatiq <https://dramatiq.io>`_.
 
 AnyBlok Dramatiq is released under the terms of the `Mozilla Public License`.
